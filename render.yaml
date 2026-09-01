@@ -1,0 +1,59 @@
+# Render Blueprint — deploys the API and the static client from this one repo.
+# Render dashboard → New → Blueprint → select this repo → Apply.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Before applying:
+#   1. Push this repo to GitHub (or GitLab/Bitbucket) and connect it to Render.
+#   2. Create a free MongoDB Atlas cluster and grab its connection string —
+#      you'll be prompted to paste it in as MONGO_URI (it's marked `sync: false`
+#      below, so it's never stored in this file or the repo).
+#   3. Decide the API's public hostname. VITE_API_BASE below assumes
+#      api.goharkhanawan.com — after the API service is created, add that
+#      custom domain to it in the Render dashboard (Settings → Custom Domains)
+#      and point DNS at it. If you'd rather use the *.onrender.com URL Render
+#      assigns instead of a custom subdomain, update VITE_API_BASE to match
+#      before the client's first build.
+
+services:
+  # Backend — Node/Express + MongoDB. Free plan: sleeps after ~15 min idle,
+  # then takes 30-50s to wake on the next request. The client is built to
+  # tolerate that (see client/src/App.jsx) by falling back to bundled
+  # content instead of blocking on a cold API.
+  - type: web
+    name: gohar-portfolio-api
+    runtime: node
+    plan: free
+    region: frankfurt # closest Render region to Germany; change if you'd prefer another
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_ORIGIN
+        value: https://goharkhanawan.com,https://www.goharkhanawan.com
+      - key: MONGO_URI
+        sync: false # set in the Render dashboard — never committed to the repo
+
+  # Frontend — static React build served from Render's CDN. Static sites are
+  # free with no sleep/cold-start behavior.
+  - type: web
+    name: gohar-portfolio-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    envVars:
+      - key: VITE_API_BASE
+        value: https://api.goharkhanawan.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

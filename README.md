@@ -1,0 +1,139 @@
+# Gohar Khan Awan — Portfolio (MERN)
+
+Personal portfolio built on the MERN stack (MongoDB, Express, React, Node.js), meant to be hosted at **goharkhanawan.com**.
+
+## Structure
+
+```
+Portfolio/
+├── client/          React + Vite frontend
+│   └── src/
+│       ├── components/   Nav, Hero, Projects, Contact, etc.
+│       ├── data/          client-side fallback content
+│       ├── styles/        design system (index.css)
+│       └── App.jsx
+├── server/          Express + MongoDB (Mongoose) API
+│   └── src/
+│       ├── data/portfolio.js   single source of truth for all content
+│       ├── models/             Mongoose schemas (Content, Message)
+│       ├── routes/             /api/portfolio, /api/contact
+│       └── index.js
+├── render.yaml      Render Blueprint — static client + free API
+└── package.json     root scripts (runs both together)
+```
+
+The API serves portfolio content from MongoDB when available (see `npm run seed`),
+and falls back to the checked-in `server/src/data/portfolio.js` file otherwise —
+so the site works even before a database is connected. The contact form
+persists messages to MongoDB, or to `server/data/messages.local.json` if no
+database is configured, so nothing is ever silently dropped.
+
+## Getting started
+
+```bash
+npm run install:all       # installs root, client, and server deps
+
+cp server/.env.example server/.env
+# edit server/.env — at minimum set MONGO_URI if you want persistence
+
+npm run dev                # runs client (5173) + server (5050) together
+```
+
+Open http://localhost:5173. The Vite dev server proxies `/api/*` to the
+Express server, so the site works exactly as it will in production.
+
+### Optional: push content into MongoDB
+
+```bash
+npm run seed
+```
+
+This upserts the content from `server/src/data/portfolio.js` into a
+`portfolio` document in Mongo. After seeding, edit the site's content by
+either editing that file and re-running `seed`, or editing the document
+directly in the database — no redeploy required for the latter.
+
+## Building for production
+
+```bash
+npm run build              # builds client/dist
+NODE_ENV=production npm start   # server serves the API AND client/dist
+```
+
+A single Node process (the Express server) can serve both the API and the
+built frontend — handy for local testing or a one-service deploy. The actual
+deploy target for this project is two separate Render services (below),
+which is why `render.yaml` doesn't use this path.
+
+## Deploying to Render (static client + free API, per `render.yaml`)
+
+This repo includes a [render.yaml](render.yaml) Blueprint that deploys:
+
+- **`gohar-portfolio-client`** — a static site (the Vite build). Static
+  sites on Render are free with no sleep/cold-start behavior — this is what
+  keeps hosting cost near zero.
+- **`gohar-portfolio-api`** — a free Node web service running Express. Free
+  web services sleep after ~15 min idle and take **30–50s to wake up** on
+  the next request. The client is built to tolerate this: it shows the
+  bundled fallback content almost immediately instead of blocking on a cold
+  API, then swaps in live data silently if/when it arrives (see the
+  `useEffect` in `client/src/App.jsx`).
+- Render doesn't offer a free managed MongoDB — use a free
+  [MongoDB Atlas](https://www.mongodb.com/atlas) M0 cluster instead and pass
+  its connection string in as `MONGO_URI`.
+
+### One-time setup
+
+1. **Push this repo to GitHub** (or GitLab/Bitbucket) — Render Blueprints
+   deploy from a connected git repo:
+   ```bash
+   git init                       # if not already a repo
+   git add -A
+   git commit -m "Initial portfolio"
+   git branch -M main
+   git remote add origin <your-repo-url>
+   git push -u origin main
+   ```
+2. **Create a MongoDB Atlas cluster** (free M0 tier) and copy its connection
+   string — you'll paste it into Render in step 4.
+3. **Pick the API's public hostname.** `render.yaml` assumes
+   `api.goharkhanawan.com` for `VITE_API_BASE` (it's baked into the client
+   at build time, so it needs to be decided up front). If you'd rather use
+   the `*.onrender.com` URL Render assigns instead of a custom subdomain,
+   edit that value in `render.yaml` before the first deploy.
+4. **In the Render dashboard:** New → Blueprint → select this repo → Apply.
+   Render reads `render.yaml` and creates both services. When prompted,
+   paste your Atlas connection string in as `MONGO_URI` on the API service
+   (it's marked `sync: false` so it's never stored in the repo).
+5. **Custom domains:** in each service's Settings → Custom Domains, add
+   `goharkhanawan.com` + `www.goharkhanawan.com` to the client and
+   `api.goharkhanawan.com` to the API, then follow Render's DNS instructions
+   for your registrar (it shows the exact records to add — usually a CNAME
+   for `www`/`api` and an ALIAS/ANAME or A record for the apex domain).
+   Render issues free SSL certificates automatically once DNS resolves.
+6. **Seed content into MongoDB** (optional but recommended, so you can edit
+   content from the database later without redeploying):
+   ```bash
+   MONGO_URI="<your atlas connection string>" npm --prefix server run seed
+   ```
+
+After that, pushing to the connected branch auto-deploys both services
+(`autoDeploy: true` in `render.yaml`).
+
+## Editing content
+
+Everything you see on the site — bio, metrics, skills, projects, philosophy,
+experience, education, contact links — comes from one object:
+`server/src/data/portfolio.js`. Edit that file (and optionally re-run
+`npm run seed`) to update the site; no component code needs to change for
+content edits.
+
+## Notes
+
+- Design: dark, high-contrast "systems engineer" aesthetic — Space Grotesk /
+  JetBrains Mono / Inter, a cyan→indigo→emerald accent gradient, animated
+  count-up stats, scroll reveals, and pointer-tracked card spotlights
+  (Framer Motion). Fully responsive, reduced-motion aware.
+- The contact form has a honeypot field and server-side rate limiting
+  (5 requests / 15 min / IP) against spam.
+- `GET /api/health` reports server + DB status for uptime checks.
