@@ -13,7 +13,8 @@ Portfolio/
 │       ├── styles/        design system (index.css)
 │       └── App.jsx
 │       ├── admin/          the /admin analytics dashboard (separate bundle)
-│       ├── lib/analytics.js visitor tracking that runs on the public site
+│       ├── pages/Privacy.jsx  the /privacy page (separate bundle)
+│       ├── lib/            analytics tracker + consent gate
 │       └── App.jsx
 ├── server/          Express + MongoDB (Mongoose) API
 │   └── src/
@@ -164,11 +165,19 @@ set, `/admin` and all `/api/admin/*` routes return 503. It has three views:
 - **Visitors** — every unique visitor, newest activity first; expand one to see
   all of their visits.
 
-> **Privacy / GDPR:** this tracks IP-derived location and on-page behaviour
-> without a consent prompt. For an EU-facing site you most likely need a cookie/
-> consent banner and a privacy policy before enabling it in production, or
-> should scope down what's collected. The pieces are all in
-> `client/src/lib/analytics.js` if you want to gate or trim them.
+### Consent & privacy
+
+Analytics are **opt-in**. On first visit a consent banner shows Accept / Decline
+(equally prominent); nothing in `analytics.js` runs — and no visitor ID is
+stored — until the visitor accepts. The choice is remembered in `localStorage`
+(`pf_consent`). A browser "Do Not Track" / Global Privacy Control signal is
+treated as a decline, and the banner is skipped. There's a full privacy policy
+at **`/privacy`** (linked from the footer) with a live control to change the
+choice at any time. Consent logic lives in `client/src/lib/consent.js`.
+
+This is a reasonable GDPR baseline, but **not legal advice** — review the
+`/privacy` copy, confirm your MongoDB Atlas region (pick an EU one), and adjust
+retention / wording to your situation before relying on it.
 
 ## Editing content
 

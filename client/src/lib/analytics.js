@@ -194,6 +194,7 @@ function flush(useBeacon = false) {
 }
 
 function enqueue(type, data = {}) {
+  if (!state.started) return; // no consent / not initialised
   state.lastActivity = Date.now();
   state.queue.push({ type, ts: new Date().toISOString(), ...data });
   if (state.queue.length >= 12) flush();
@@ -201,6 +202,7 @@ function enqueue(type, data = {}) {
 
 /** Public: let components report semantic events (e.g. the contact form). */
 export function trackEvent(type, data = {}) {
+  if (!state.started) return;
   if (type === "contact_field_focus" || type === "contact_submit") state.contactStarted = true;
   if (type === "contact_success") state.contactSubmitted = true;
   enqueue(type, data);

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { getPortfolio } from "./api";
 import { fallbackPortfolio } from "./data/fallback";
 import { initAnalytics } from "./lib/analytics";
+import { getConsent, setConsent, hasDoNotTrackSignal } from "./lib/consent";
+import ConsentBanner from "./components/ConsentBanner";
 
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
@@ -17,10 +19,27 @@ import Footer from "./components/Footer";
 
 export default function App() {
   const [data, setData] = useState(null);
+  const [showConsent, setShowConsent] = useState(false);
 
   useEffect(() => {
-    initAnalytics();
+    const stored = getConsent();
+    if (stored === "granted") {
+      initAnalytics();
+    } else if (stored === null) {
+      if (hasDoNotTrackSignal()) setConsent("denied");
+      else setShowConsent(true);
+    }
   }, []);
+
+  function acceptConsent() {
+    setConsent("granted");
+    setShowConsent(false);
+    initAnalytics();
+  }
+  function declineConsent() {
+    setConsent("denied");
+    setShowConsent(false);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +97,7 @@ export default function App() {
         <Contact contact={data.contact} />
       </main>
       <Footer person={data.person} />
+      {showConsent && <ConsentBanner onAccept={acceptConsent} onDecline={declineConsent} />}
     </>
   );
 }
