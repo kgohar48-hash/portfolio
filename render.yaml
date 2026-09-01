@@ -36,6 +36,10 @@ services:
         value: https://goharkhanawan.com,https://www.goharkhanawan.com
       - key: MONGO_URI
         sync: false # set in the Render dashboard — never committed to the repo
+      - key: ADMIN_PASSWORD
+        sync: false # the password for the /admin analytics dashboard — set in the dashboard
+      - key: ADMIN_JWT_SECRET
+        generateValue: true # Render generates a random secret; admin logins survive restarts
 
   # Frontend — static React build served from Render's CDN. Static sites are
   # free with no sleep/cold-start behavior.

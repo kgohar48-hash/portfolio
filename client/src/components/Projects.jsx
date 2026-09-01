@@ -18,7 +18,13 @@ export default function Projects({ projects }) {
                 <div className="project-bar" />
                 <h3 className="project-name">{p.name}</h3>
                 {p.url && (
-                  <a href={p.url} target="_blank" rel="noreferrer" className="project-link">
+                  <a
+                    href={p.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="project-link"
+                    data-track={`project:${p.name}`}
+                  >
                     Visit site ↗
                   </a>
                 )}

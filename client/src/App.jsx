@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPortfolio } from "./api";
 import { fallbackPortfolio } from "./data/fallback";
+import { initAnalytics } from "./lib/analytics";
 
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
@@ -16,6 +17,10 @@ import Footer from "./components/Footer";
 
 export default function App() {
   const [data, setData] = useState(null);
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

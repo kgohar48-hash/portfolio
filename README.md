@@ -12,11 +12,15 @@ Portfolio/
 │       ├── data/          client-side fallback content
 │       ├── styles/        design system (index.css)
 │       └── App.jsx
+│       ├── admin/          the /admin analytics dashboard (separate bundle)
+│       ├── lib/analytics.js visitor tracking that runs on the public site
+│       └── App.jsx
 ├── server/          Express + MongoDB (Mongoose) API
 │   └── src/
 │       ├── data/portfolio.js   single source of truth for all content
-│       ├── models/             Mongoose schemas (Content, Message)
-│       ├── routes/             /api/portfolio, /api/contact
+│       ├── models/             Content, Message, Visitor, Session, Event
+│       ├── lib/                geo lookup, UA parsing, admin auth
+│       ├── routes/             /api/portfolio, /api/contact, /api/track, /api/admin
 │       └── index.js
 ├── render.yaml      Render Blueprint — static client + free API
 └── package.json     root scripts (runs both together)
@@ -102,9 +106,11 @@ This repo includes a [render.yaml](render.yaml) Blueprint that deploys:
    the `*.onrender.com` URL Render assigns instead of a custom subdomain,
    edit that value in `render.yaml` before the first deploy.
 4. **In the Render dashboard:** New → Blueprint → select this repo → Apply.
-   Render reads `render.yaml` and creates both services. When prompted,
-   paste your Atlas connection string in as `MONGO_URI` on the API service
-   (it's marked `sync: false` so it's never stored in the repo).
+   Render reads `render.yaml` and creates both services. When prompted, set
+   the `sync: false` secrets on the API service:
+   - `MONGO_URI` — your Atlas connection string
+   - `ADMIN_PASSWORD` — the password for the `/admin` analytics dashboard
+     (leave blank to keep `/admin` disabled)
 5. **Custom domains:** in each service's Settings → Custom Domains, add
    `goharkhanawan.com` + `www.goharkhanawan.com` to the client and
    `api.goharkhanawan.com` to the API, then follow Render's DNS instructions
@@ -119,6 +125,50 @@ This repo includes a [render.yaml](render.yaml) Blueprint that deploys:
 
 After that, pushing to the connected branch auto-deploys both services
 (`autoDeploy: true` in `render.yaml`).
+
+## Visitor analytics + `/admin` dashboard
+
+The public site loads a small first-party tracker (`client/src/lib/analytics.js`)
+that records, per visit:
+
+- **Who** — a UUID kept in `localStorage`, so returning visitors are recognised
+  and stitched into one history (visit number, days since last visit).
+- **Where** — IP (server-side only), resolved to city / region / country /
+  coordinates / ISP via a keyless geo API (`ipwho.is`, `ipapi.co` fallback).
+- **How they arrived** — referrer, UTM tags, and a derived channel
+  (organic / social / referral / direct / campaign) + source.
+- **Device** — browser, OS, device type, screen + viewport, DPR, language,
+  timezone, connection type, CPU/RAM hints, touch, Do-Not-Track, bot flag.
+- **Behaviour** — time on page (wall-clock + engaged), scroll depth (% and px),
+  which sections were seen and for how long, every click (with element +
+  viewport position), outbound clicks, copies, prints, tab switches, resizes,
+  and the full contact-form funnel (started → submitted → sent).
+- **Performance** — TTFB, DOM-ready, and load time as the visitor experienced it.
+
+Data lands in three collections: `visitors` (identity + lifetime rollups),
+`sessions` (one per visit, with all the enriched context), and `events` (the
+raw per-action timeline, which auto-expires after `EVENTS_TTL_DAYS`, default
+365 — the rollups are kept forever).
+
+**The dashboard is at `/admin`.** It's not linked from anywhere — reachable only
+by typing the URL — and everything behind it needs the admin password
+(`ADMIN_PASSWORD`), exchanged for a 30-day signed token. Without `ADMIN_PASSWORD`
+set, `/admin` and all `/api/admin/*` routes return 503. It has three views:
+
+- **Overview** — headline stats, a traffic-over-time chart, breakdowns
+  (channels, sources, referrers, countries, cities, browsers, OS, devices,
+  most-clicked elements), a section-by-section scroll funnel, and scroll-depth /
+  visit-duration distributions. Filter by date range; toggle bot traffic.
+- **Sessions** — a searchable, paginated table; click any row for the full
+  per-visit detail + event timeline. CSV export.
+- **Visitors** — every unique visitor, newest activity first; expand one to see
+  all of their visits.
+
+> **Privacy / GDPR:** this tracks IP-derived location and on-page behaviour
+> without a consent prompt. For an EU-facing site you most likely need a cookie/
+> consent banner and a privacy policy before enabling it in production, or
+> should scope down what's collected. The pieces are all in
+> `client/src/lib/analytics.js` if you want to gate or trim them.
 
 ## Editing content
 
@@ -136,4 +186,10 @@ content edits.
   (Framer Motion). Fully responsive, reduced-motion aware.
 - The contact form has a honeypot field and server-side rate limiting
   (5 requests / 15 min / IP) against spam.
-- `GET /api/health` reports server + DB status for uptime checks.
+- `GET /api/health` reports server + DB + admin status for uptime checks.
+- The `/admin` dashboard is a lazy-loaded chunk — the public portfolio never
+  downloads it. Its charts use a colorblind-safe palette (validated per the
+  `dataviz` method); it's dark-only by design.
+- Analytics tracking is skipped entirely on `/admin`, for visitors with an
+  ad-blocker that blocks `/api/track`, and whenever no database is connected
+  (requests are accepted and dropped).

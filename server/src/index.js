@@ -11,6 +11,9 @@ import rateLimit from "express-rate-limit";
 import { connectDb, isDbConnected } from "./config/db.js";
 import portfolioRoutes from "./routes/portfolio.js";
 import contactRoutes from "./routes/contact.js";
+import trackRoutes from "./routes/track.js";
+import adminRoutes from "./routes/admin.js";
+import { adminConfigured } from "./lib/adminAuth.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 5050;
@@ -21,7 +24,10 @@ app.set("trust proxy", 1);
 
 app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
 app.use(compression());
-app.use(express.json({ limit: "64kb" }));
+app.use(express.json({ limit: "128kb" }));
+// navigator.sendBeacon (used to flush analytics on page exit) may arrive as
+// text/plain depending on the browser — parse that into a string too.
+app.use(express.text({ type: ["text/plain"], limit: "128kb" }));
 
 const devOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
 const envOrigins = (process.env.CLIENT_ORIGIN || "")
@@ -43,14 +49,22 @@ const corsMiddleware = cors({
 // keeps static assets (JS/CSS, which Vite marks `crossorigin`) from ever
 // being rejected by the origin allowlist when served same-origin.
 app.use("/api", corsMiddleware);
-app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false }));
+// Broad ceiling; individual routes (track, contact, admin/login) set tighter limits.
+app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 400, standardHeaders: true, legacyHeaders: false }));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, db: isDbConnected() ? "connected" : "offline", uptime: process.uptime() });
+  res.json({
+    ok: true,
+    db: isDbConnected() ? "connected" : "offline",
+    admin: adminConfigured ? "configured" : "off",
+    uptime: process.uptime()
+  });
 });
 
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/track", trackRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Serve the built client in production, for a single-service deploy.
 // Not used on Render (render.yaml runs the client as its own static site),

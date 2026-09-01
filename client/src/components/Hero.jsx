@@ -33,10 +33,10 @@ export default function Hero({ person }) {
           </motion.p>
 
           <motion.div variants={item} className="hero-cta">
-            <a href="#projects" className="btn btn-primary">
+            <a href="#projects" className="btn btn-primary" data-track="hero:view-projects">
               View projects →
             </a>
-            <a href="#contact" className="btn btn-ghost">
+            <a href="#contact" className="btn btn-ghost" data-track="hero:get-in-touch">
               Get in touch
             </a>
           </motion.div>
