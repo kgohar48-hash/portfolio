@@ -189,10 +189,12 @@ content edits.
 
 ## Notes
 
-- Design: dark, high-contrast "systems engineer" aesthetic — Space Grotesk /
-  JetBrains Mono / Inter, a cyan→indigo→emerald accent gradient, animated
-  count-up stats, scroll reveals, and pointer-tracked card spotlights
-  (Framer Motion). Fully responsive, reduced-motion aware.
+- Design: dark, editorial "systems engineer" aesthetic — Clash Display
+  headlines, Fragment Mono labels, Switzer body (all self-hosted from
+  `client/public/fonts`, no font CDN), a prismatic accent sweep, animated
+  count-up stats, scroll reveals, hairline section rules, and a
+  "grayscale by default, colour on hover" motif on the portrait and project
+  cards. Fully responsive, reduced-motion aware.
 - The contact form has a honeypot field and server-side rate limiting
   (5 requests / 15 min / IP) against spam.
 - `GET /api/health` reports server + DB + admin status for uptime checks.

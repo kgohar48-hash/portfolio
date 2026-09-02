@@ -21,8 +21,7 @@ export default function Hero({ person }) {
           </motion.div>
 
           <motion.h1 variants={item}>
-            {person.name.split(" ").slice(0, -1).join(" ")}{" "}
-            <span className="gradient-text">{person.name.split(" ").slice(-1)}</span>
+            <span className="gradient-text">{person.name}</span>
           </motion.h1>
 
           <motion.div variants={item} className="hero-role">

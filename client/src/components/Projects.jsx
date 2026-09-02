@@ -9,6 +9,7 @@ export default function Projects({ projects }) {
       title="Shipping products with measurable impact"
       sub="Premium engineering is clarity under pressure: correctness, throughput, cost, and maintainability."
     >
+      <p className="projects-hint">Hover a project for colour.</p>
       <div className="projects-list">
         {projects.map((p, i) => (
           <Reveal key={p.name} delay={i * 0.05}>
