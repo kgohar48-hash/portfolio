@@ -58,7 +58,7 @@ export default function Dashboard({ onLogout }) {
           <span className="adm-logo">G</span>
           <div>
             <div className="adm-h-title">Portfolio Analytics</div>
-            <div className="adm-h-sub">goharkhanawan.com</div>
+            <div className="adm-h-sub">goharawan.com</div>
           </div>
         </div>
         <div className="adm-header-r">

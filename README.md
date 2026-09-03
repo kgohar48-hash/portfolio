@@ -1,6 +1,6 @@
 # Gohar Khan Awan — Portfolio (MERN)
 
-Personal portfolio built on the MERN stack (MongoDB, Express, React, Node.js), meant to be hosted at **goharkhanawan.com**.
+Personal portfolio built on the MERN stack (MongoDB, Express, React, Node.js), meant to be hosted at **goharawan.com**.
 
 ## Structure
 
@@ -102,7 +102,7 @@ This repo includes a [render.yaml](render.yaml) Blueprint that deploys:
 2. **Create a MongoDB Atlas cluster** (free M0 tier) and copy its connection
    string — you'll paste it into Render in step 4.
 3. **Pick the API's public hostname.** `render.yaml` assumes
-   `api.goharkhanawan.com` for `VITE_API_BASE` (it's baked into the client
+   `api.goharawan.com` for `VITE_API_BASE` (it's baked into the client
    at build time, so it needs to be decided up front). If you'd rather use
    the `*.onrender.com` URL Render assigns instead of a custom subdomain,
    edit that value in `render.yaml` before the first deploy.
@@ -113,8 +113,8 @@ This repo includes a [render.yaml](render.yaml) Blueprint that deploys:
    - `ADMIN_PASSWORD` — the password for the `/admin` analytics dashboard
      (leave blank to keep `/admin` disabled)
 5. **Custom domains:** in each service's Settings → Custom Domains, add
-   `goharkhanawan.com` + `www.goharkhanawan.com` to the client and
-   `api.goharkhanawan.com` to the API, then follow Render's DNS instructions
+   `goharawan.com` + `www.goharawan.com` to the client and
+   `api.goharawan.com` to the API, then follow Render's DNS instructions
    for your registrar (it shows the exact records to add — usually a CNAME
    for `www`/`api` and an ALIAS/ANAME or A record for the apex domain).
    Render issues free SSL certificates automatically once DNS resolves.

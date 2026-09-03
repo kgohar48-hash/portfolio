@@ -8,7 +8,7 @@
 #      you'll be prompted to paste it in as MONGO_URI (it's marked `sync: false`
 #      below, so it's never stored in this file or the repo).
 #   3. Decide the API's public hostname. VITE_API_BASE below assumes
-#      api.goharkhanawan.com — after the API service is created, add that
+#      api.goharawan.com — after the API service is created, add that
 #      custom domain to it in the Render dashboard (Settings → Custom Domains)
 #      and point DNS at it. If you'd rather use the *.onrender.com URL Render
 #      assigns instead of a custom subdomain, update VITE_API_BASE to match
@@ -33,7 +33,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: CLIENT_ORIGIN
-        value: https://goharkhanawan.com,https://www.goharkhanawan.com
+        value: https://goharawan.com,https://www.goharawan.com
       - key: MONGO_URI
         sync: false # set in the Render dashboard — never committed to the repo
       - key: ADMIN_PASSWORD
@@ -52,7 +52,7 @@ services:
     autoDeploy: true
     envVars:
       - key: VITE_API_BASE
-        value: https://api.goharkhanawan.com
+        value: https://api.goharawan.com
     routes:
       - type: rewrite
         source: /*
