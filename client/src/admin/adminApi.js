@@ -54,5 +54,14 @@ export const adminApi = {
     });
     if (!res.ok) throw new Error("Export failed");
     return res.blob();
+  },
+
+  jobs: {
+    schema: () => req("/jobs/schema"),
+    list: () => req("/jobs"),
+    get: (id) => req(`/jobs/${encodeURIComponent(id)}`),
+    save: (body) => req("/jobs", { method: "POST", body }),
+    patch: (id, body) => req(`/jobs/${encodeURIComponent(id)}`, { method: "PATCH", body }),
+    remove: (id) => req(`/jobs/${encodeURIComponent(id)}`, { method: "DELETE" })
   }
 };

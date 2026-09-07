@@ -5,6 +5,7 @@ import Visitor from "../models/Visitor.js";
 import Session from "../models/Session.js";
 import Event from "../models/Event.js";
 import { adminConfigured, verifyPassword, issueToken, requireAdmin } from "../lib/adminAuth.js";
+import jobsRouter from "./adminJobs.js";
 
 const router = Router();
 
@@ -33,6 +34,9 @@ router.post("/login", loginLimiter, (req, res) => {
 router.use(requireAdmin);
 
 router.get("/me", (_req, res) => res.json({ ok: true, admin: true }));
+
+// Job-application tracker
+router.use("/jobs", jobsRouter);
 
 function rangeToStart(range) {
   const now = Date.now();

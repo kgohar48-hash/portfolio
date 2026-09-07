@@ -19,7 +19,7 @@ Portfolio/
 ├── server/          Express + MongoDB (Mongoose) API
 │   └── src/
 │       ├── data/portfolio.js   single source of truth for all content
-│       ├── models/             Content, Message, Visitor, Session, Event
+│       ├── models/             Content, Message, Visitor, Session, Event, JobApplication
 │       ├── lib/                geo lookup, UA parsing, admin auth
 │       ├── routes/             /api/portfolio, /api/contact, /api/track, /api/admin
 │       └── index.js
@@ -154,7 +154,7 @@ raw per-action timeline, which auto-expires after `EVENTS_TTL_DAYS`, default
 **The dashboard is at `/admin`.** It's not linked from anywhere — reachable only
 by typing the URL — and everything behind it needs the admin password
 (`ADMIN_PASSWORD`), exchanged for a 30-day signed token. Without `ADMIN_PASSWORD`
-set, `/admin` and all `/api/admin/*` routes return 503. It has three views:
+set, `/admin` and all `/api/admin/*` routes return 503. It has four tabs:
 
 - **Overview** — headline stats, a traffic-over-time chart, breakdowns
   (channels, sources, referrers, countries, cities, browsers, OS, devices,
@@ -164,6 +164,14 @@ set, `/admin` and all `/api/admin/*` routes return 503. It has three views:
   per-visit detail + event timeline. CSV export.
 - **Visitors** — every unique visitor, newest activity first; expand one to see
   all of their visits.
+- **Job applications** — a personal application tracker (nothing to do with site
+  visitors). Paste the JSON an LLM produced after tailoring your resume + cover
+  letter for a job description; the tracker upserts it (by company + role, with a
+  confirm before overwriting). Shows the canonical schema + a copy-paste prompt
+  so the LLM's JSON always matches. Pipeline stats, inline status editing, a
+  detail drawer with cover letter, interviews, status history, and "Copy JSON"
+  for a round-trip LLM update. Schema lives in `server/src/data/jobSchema.js`
+  (single source of truth for the model, the API, and the on-page prompt).
 
 ### Consent & privacy
 

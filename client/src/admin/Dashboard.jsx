@@ -6,6 +6,7 @@ import { BarList, Columns, Funnel } from "./components/charts";
 import TimeSeriesChart from "./components/TimeSeriesChart";
 import SessionsTable from "./components/SessionsTable";
 import VisitorsTable from "./components/VisitorsTable";
+import JobsPanel from "./components/JobsPanel";
 
 const RANGES = [
   ["24h", "24 hours"],
@@ -18,7 +19,8 @@ const RANGES = [
 
 const CHANNEL_LABEL = { organic: "Search", social: "Social", referral: "Referral", direct: "Direct", campaign: "Campaign" };
 
-const VALID_TABS = ["overview", "sessions", "visitors"];
+const VALID_TABS = ["overview", "sessions", "visitors", "jobs"];
+const TAB_LABEL = { overview: "Overview", sessions: "Sessions", visitors: "Visitors", jobs: "Job applications" };
 
 export default function Dashboard({ onLogout }) {
   const [range, setRange] = useState("7d");
@@ -36,7 +38,10 @@ export default function Dashboard({ onLogout }) {
   const [err, setErr] = useState("");
   const [includeBots, setIncludeBots] = useState(false);
 
+  const analyticsTab = tab === "overview" || tab === "sessions" || tab === "visitors";
+
   useEffect(() => {
+    if (!analyticsTab) return;
     let alive = true;
     setOv(null);
     setErr("");
@@ -47,7 +52,7 @@ export default function Dashboard({ onLogout }) {
     return () => {
       alive = false;
     };
-  }, [range, includeBots]);
+  }, [range, includeBots, analyticsTab]);
 
   const c = ov?.cards;
 
@@ -57,21 +62,25 @@ export default function Dashboard({ onLogout }) {
         <div className="adm-header-l">
           <span className="adm-logo">G</span>
           <div>
-            <div className="adm-h-title">Portfolio Analytics</div>
+            <div className="adm-h-title">Portfolio Admin</div>
             <div className="adm-h-sub">goharawan.com</div>
           </div>
         </div>
         <div className="adm-header-r">
-          <div className="adm-range">
-            {RANGES.map(([v, label]) => (
-              <button key={v} className={range === v ? "active" : ""} onClick={() => setRange(v)}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <label className="adm-check">
-            <input type="checkbox" checked={includeBots} onChange={(e) => setIncludeBots(e.target.checked)} /> Bots
-          </label>
+          {analyticsTab && (
+            <>
+              <div className="adm-range">
+                {RANGES.map(([v, label]) => (
+                  <button key={v} className={range === v ? "active" : ""} onClick={() => setRange(v)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <label className="adm-check">
+                <input type="checkbox" checked={includeBots} onChange={(e) => setIncludeBots(e.target.checked)} /> Bots
+              </label>
+            </>
+          )}
           <button className="adm-btn adm-btn-ghost adm-btn-sm" onClick={onLogout}>
             Sign out
           </button>
@@ -79,9 +88,9 @@ export default function Dashboard({ onLogout }) {
       </header>
 
       <nav className="adm-tabs">
-        {["overview", "sessions", "visitors"].map((t) => (
+        {VALID_TABS.map((t) => (
           <button key={t} className={tab === t ? "active" : ""} onClick={() => setTab(t)}>
-            {t[0].toUpperCase() + t.slice(1)}
+            {TAB_LABEL[t]}
           </button>
         ))}
       </nav>
@@ -142,6 +151,7 @@ export default function Dashboard({ onLogout }) {
 
         {tab === "sessions" && <SessionsTable range={range} />}
         {tab === "visitors" && <VisitorsTable />}
+        {tab === "jobs" && <JobsPanel />}
       </main>
     </div>
   );
