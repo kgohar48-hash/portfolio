@@ -1,0 +1,45 @@
+name: Poll job mailbox
+
+# Pulls new mail from IMAP, runs the LLM matcher, updates the job DB.
+# Runs on a schedule so the Render API can stay asleep (this job talks to
+# MongoDB + Gemini directly). Manual runs allowed via the Actions tab.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: poll-mail
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server deps
+        working-directory: server
+        run: npm ci
+
+      - name: Poll mailbox
+        working-directory: server
+        run: node scripts/poll-mail.mjs
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          MAIL_IMAP_HOST: ${{ vars.MAIL_IMAP_HOST }}
+          MAIL_IMAP_PORT: ${{ vars.MAIL_IMAP_PORT }}
+          MAIL_USER: ${{ vars.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          MAIL_FOLDERS: ${{ vars.MAIL_FOLDERS }}
+          MAIL_DONE_FOLDER: ${{ vars.MAIL_DONE_FOLDER }}

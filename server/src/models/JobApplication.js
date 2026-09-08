@@ -51,7 +51,16 @@ const jobApplicationSchema = new mongoose.Schema(
 
     interviews: { type: [interviewSchema], default: [] },
     statusHistory: {
-      type: [{ at: { type: Date, default: Date.now }, from: String, to: String }],
+      type: [
+        {
+          at: { type: Date, default: Date.now },
+          from: String,
+          to: String,
+          via: String, // "manual" | "json" | "email:auto" | "email:review"
+          note: String, // short reason (e.g. LLM reasoning)
+          confidence: Number // 0..1 when set by the mail matcher
+        }
+      ],
       default: []
     },
     createdVia: { type: String, enum: ["manual", "json"], default: "manual" },

@@ -1069,9 +1069,10 @@
 }
 .adm textarea.adm-jd-notes {
   width: 100%;
-  min-height: 90px;
+  min-height: 120px;
   resize: vertical;
   font-family: var(--adm-sans);
+  line-height: 1.5;
 }
 .adm-jd-iv {
   display: flex;
@@ -1122,4 +1123,115 @@
 }
 .adm-btn-danger:hover {
   background: rgba(208, 59, 59, 0.25);
+}
+
+/* ============================================================
+   INBOX (job-mail pipeline)
+   ============================================================ */
+.adm-mailpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.adm-mail-settings {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.adm-mail-threshold {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  min-width: 260px;
+}
+.adm-mail-threshold input[type="range"] {
+  accent-color: var(--adm-blue);
+  width: 100%;
+}
+.adm-subtabs {
+  border: none;
+  padding: 0;
+  gap: 2px;
+}
+.adm-subtabs button {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.adm-mail-table td {
+  vertical-align: middle;
+}
+.adm-mail-from {
+  color: var(--adm-text);
+  font-weight: 600;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-mail-subj {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-mail-date {
+  color: var(--adm-text-faint);
+  white-space: nowrap;
+}
+.adm-conf {
+  font-family: var(--adm-mono);
+  font-size: 0.76rem;
+  color: var(--adm-text-faint);
+}
+.adm-conf-good {
+  color: var(--adm-good);
+}
+.adm-conf-mid {
+  color: var(--adm-warn);
+}
+.adm-conf-low {
+  color: #fca5a5;
+}
+
+.adm-mail-verdict {
+  border: 1px solid var(--adm-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: var(--adm-surface-2);
+  margin-bottom: 18px;
+}
+.adm-mail-verdict-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--adm-text-dim);
+  font-family: var(--adm-mono);
+}
+.adm-mail-reasoning {
+  margin-top: 10px;
+  font-size: 0.88rem;
+  color: var(--adm-text-dim);
+  line-height: 1.55;
+}
+.adm-mail-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.adm-mail-controls select {
+  min-width: 180px;
+}
+.adm-mail-html {
+  width: 100%;
+  min-height: 320px;
+  border: 1px solid var(--adm-border);
+  border-radius: 10px;
+  background: #fff;
 }

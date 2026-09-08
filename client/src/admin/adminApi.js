@@ -63,5 +63,18 @@ export const adminApi = {
     save: (body) => req("/jobs", { method: "POST", body }),
     patch: (id, body) => req(`/jobs/${encodeURIComponent(id)}`, { method: "PATCH", body }),
     remove: (id) => req(`/jobs/${encodeURIComponent(id)}`, { method: "DELETE" })
+  },
+
+  mail: {
+    list: (params) => req(`/mail?${new URLSearchParams(params)}`),
+    get: (id) => req(`/mail/${encodeURIComponent(id)}`),
+    apply: (id, body) => req(`/mail/${encodeURIComponent(id)}/apply`, { method: "POST", body }),
+    match: (id, applicationId) => req(`/mail/${encodeURIComponent(id)}/match`, { method: "POST", body: { applicationId } }),
+    dismiss: (id) => req(`/mail/${encodeURIComponent(id)}/dismiss`, { method: "POST" }),
+    reprocess: (id) => req(`/mail/${encodeURIComponent(id)}/reprocess`, { method: "POST" }),
+    draft: (id) => req(`/mail/${encodeURIComponent(id)}/draft`, { method: "POST" }),
+    reply: (id, body) => req(`/mail/${encodeURIComponent(id)}/reply`, { method: "POST", body }),
+    settings: () => req("/mail/settings"),
+    saveSettings: (body) => req("/mail/settings", { method: "PATCH", body })
   }
 };

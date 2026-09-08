@@ -7,6 +7,7 @@ import TimeSeriesChart from "./components/TimeSeriesChart";
 import SessionsTable from "./components/SessionsTable";
 import VisitorsTable from "./components/VisitorsTable";
 import JobsPanel from "./components/JobsPanel";
+import MailPanel from "./components/MailPanel";
 
 const RANGES = [
   ["24h", "24 hours"],
@@ -19,8 +20,14 @@ const RANGES = [
 
 const CHANNEL_LABEL = { organic: "Search", social: "Social", referral: "Referral", direct: "Direct", campaign: "Campaign" };
 
-const VALID_TABS = ["overview", "sessions", "visitors", "jobs"];
-const TAB_LABEL = { overview: "Overview", sessions: "Sessions", visitors: "Visitors", jobs: "Job applications" };
+const VALID_TABS = ["overview", "sessions", "visitors", "jobs", "inbox"];
+const TAB_LABEL = {
+  overview: "Overview",
+  sessions: "Sessions",
+  visitors: "Visitors",
+  jobs: "Job applications",
+  inbox: "Inbox"
+};
 
 export default function Dashboard({ onLogout }) {
   const [range, setRange] = useState("7d");
@@ -152,6 +159,7 @@ export default function Dashboard({ onLogout }) {
         {tab === "sessions" && <SessionsTable range={range} />}
         {tab === "visitors" && <VisitorsTable />}
         {tab === "jobs" && <JobsPanel />}
+        {tab === "inbox" && <MailPanel />}
       </main>
     </div>
   );
