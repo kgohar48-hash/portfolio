@@ -1,15 +1,14 @@
 import mongoose from "mongoose";
 
 /**
- * One document per email pulled from the IMAP mailbox by scripts/poll-mail.mjs.
- * De-duplicated on `messageId`. Body is stored so the /admin Inbox can render
- * without touching IMAP again.
+ * One document per job-related email the admin pastes into /admin → Inbox.
+ * De-duplicated on `messageId` (a content hash for pasted mail). Body is
+ * stored so the review UI + "re-run LLM" work without the original.
  */
 const mailSchema = new mongoose.Schema(
   {
     messageId: { type: String, required: true, unique: true, index: true },
-    uid: Number,
-    folder: String,
+    source: { type: String, default: "paste" }, // paste | (imap, historical)
 
     from: { name: String, address: { type: String, index: true } },
     to: [{ name: String, address: String }],
@@ -19,9 +18,6 @@ const mailSchema = new mongoose.Schema(
     text: { type: String, maxlength: 100000 },
     html: { type: String, maxlength: 400000 },
     snippet: { type: String, maxlength: 400 },
-
-    inReplyTo: String,
-    references: [String],
 
     // --- classification by the LLM matcher ---
     screenedAt: Date,
@@ -33,6 +29,9 @@ const mailSchema = new mongoose.Schema(
     proposedStatus: String,
     statusConfidence: Number,
     reasoning: String,
+    // company/role the email is about, when it matches no tracked application
+    extractedCompany: String,
+    extractedRole: String,
     extracted: {
       interviewDate: Date,
       deadline: Date
@@ -45,11 +44,9 @@ const mailSchema = new mongoose.Schema(
     reviewedAt: Date,
     dismissed: { type: Boolean, default: false },
 
-    // --- reply ---
+    // --- suggested reply (draft only — you copy it, nothing is sent) ---
     replyDraft: String,
-    replyConfidence: Number,
-    replySentAt: Date,
-    replyBodySent: String
+    replyConfidence: Number
   },
   { timestamps: true }
 );

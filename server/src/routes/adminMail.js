@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Router } from "express";
 import { isDbConnected } from "../config/db.js";
 import Mail from "../models/Mail.js";
@@ -5,30 +6,114 @@ import MailSettings from "../models/MailSettings.js";
 import JobApplication from "../models/JobApplication.js";
 import { JOB_STATUSES } from "../data/jobSchema.js";
 import { processMail, classifyEmail, pickCandidates, applyStatus, recordInterview } from "../lib/mailMatcher.js";
-import { mailConfigured, sendReply } from "../lib/mailSend.js";
 
 // Mounted at /api/admin/mail — parent enforces requireAdmin.
 const router = Router();
 
+const norm = (s) => String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+
+/**
+ * Parse a pasted email. Accepts either explicit fields, or a raw paste whose
+ * first lines may be "From:", "Subject:", "Date:", "To:" headers.
+ */
+function parsePaste({ raw = "", from = "", subject = "", date = "" }) {
+  let body = String(raw || "");
+  let f = String(from || "").trim();
+  let s = String(subject || "").trim();
+  let d = String(date || "").trim();
+
+  const lines = body.split(/\r?\n/);
+  let consumed = 0;
+  for (let i = 0; i < Math.min(lines.length, 8); i++) {
+    const m = lines[i].match(/^\s*(from|subject|date|sent|to)\s*:\s*(.+)$/i);
+    if (!m) {
+      if (lines[i].trim() === "" && consumed > 0) {
+        consumed = i + 1;
+        break;
+      }
+      if (consumed === 0) break; // first non-blank line isn't a header → treat whole thing as body
+      continue;
+    }
+    const key = m[1].toLowerCase();
+    const val = m[2].trim();
+    if (key === "from" && !f) f = val;
+    else if (key === "subject" && !s) s = val;
+    else if ((key === "date" || key === "sent") && !d) d = val;
+    consumed = i + 1;
+  }
+  if (consumed > 0) body = lines.slice(consumed).join("\n").trim();
+
+  // pull an address out of "Name <a@b.com>" or a bare address
+  const emailMatch = f.match(/<([^>]+)>/) || f.match(/([^\s<>@]+@[^\s<>@]+\.[^\s<>@]+)/);
+  const address = emailMatch ? emailMatch[1].toLowerCase() : "";
+  const name = f.replace(/<[^>]+>/, "").replace(/["']/g, "").trim();
+
+  const parsedDate = d ? new Date(d) : null;
+
+  return {
+    from: { name: name || undefined, address: address || undefined },
+    subject: s,
+    date: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : new Date(),
+    text: body
+  };
+}
+
+/* ---------------------------------------------------------------- settings --- */
 router.get("/settings", async (_req, res) => {
   if (!isDbConnected()) return res.json({ ok: true, db: false });
   const s = await MailSettings.get();
-  res.json({ ok: true, settings: s, smtp: mailConfigured(), llm: Boolean(process.env.GEMINI_API_KEY) });
+  res.json({ ok: true, settings: s, llm: Boolean(process.env.GEMINI_API_KEY) });
 });
 
 router.patch("/settings", async (req, res) => {
   if (!isDbConnected()) return res.status(503).json({ ok: false, error: "No database connected." });
   const s = await MailSettings.get();
-  const b = req.body || {};
-  const num01 = (v) => Math.max(0, Math.min(1, Number(v)));
-  if (b.statusAutoApplyMinConfidence != null) s.statusAutoApplyMinConfidence = num01(b.statusAutoApplyMinConfidence);
-  if (typeof b.replyAutoSend === "boolean") s.replyAutoSend = b.replyAutoSend;
-  if (b.replyAutoSendMinConfidence != null) s.replyAutoSendMinConfidence = num01(b.replyAutoSendMinConfidence);
-  if (Array.isArray(b.replyAutoSendTypes)) s.replyAutoSendTypes = b.replyAutoSendTypes.map(String).slice(0, 20);
-  await s.save();
+  if (req.body?.statusAutoApplyMinConfidence != null) {
+    s.statusAutoApplyMinConfidence = Math.max(0, Math.min(1, Number(req.body.statusAutoApplyMinConfidence)));
+    await s.save();
+  }
   res.json({ ok: true, settings: s });
 });
 
+/* ------------------------------------------------------------------- paste --- */
+router.post("/paste", async (req, res) => {
+  if (!isDbConnected()) return res.status(503).json({ ok: false, error: "No database connected." });
+  if (!process.env.GEMINI_API_KEY) return res.status(503).json({ ok: false, error: "GEMINI_API_KEY is not set on the server." });
+
+  const parsed = parsePaste(req.body || {});
+  if ((parsed.text || "").trim().length < 20) {
+    return res.status(422).json({ ok: false, error: "Paste the email body — that's too short to classify." });
+  }
+
+  const messageId =
+    "paste-" +
+    crypto
+      .createHash("sha1")
+      .update(`${parsed.from.address || ""}|${parsed.subject}|${parsed.text.slice(0, 4000)}`)
+      .digest("hex");
+
+  let mail = await Mail.findOne({ messageId });
+  let deduped = false;
+  if (mail) {
+    deduped = true;
+  } else {
+    mail = await Mail.create({
+      messageId,
+      source: "paste",
+      from: parsed.from,
+      subject: parsed.subject,
+      date: parsed.date,
+      text: parsed.text.slice(0, 100000),
+      snippet: parsed.text.replace(/\s+/g, " ").trim().slice(0, 300)
+    });
+  }
+
+  const result = await processMail(mail).catch((e) => ({ action: "error", reason: e.message }));
+  const fresh = await Mail.findById(mail._id).populate("matchedApplication", "company role status").lean();
+  res.json({ ok: true, deduped, result, mail: fresh });
+});
+
+/* -------------------------------------------------------------------- list --- */
 router.get("/", async (req, res) => {
   if (!isDbConnected()) return res.json({ ok: true, db: false, items: [], total: 0 });
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -60,7 +145,6 @@ router.get("/:id", async (req, res) => {
   const mail = await Mail.findById(req.params.id).populate("matchedApplication").lean().catch(() => null);
   if (!mail) return res.status(404).json({ ok: false, error: "Not found." });
 
-  // small candidate list so the UI can offer a "change match" dropdown
   const apps = await JobApplication.find({ updatedAt: { $gte: new Date(Date.now() - 200 * 864e5) } })
     .select("company role status")
     .sort({ updatedAt: -1 })
@@ -111,6 +195,47 @@ router.post("/:id/match", async (req, res) => {
   res.json({ ok: true, mail: mail.toObject() });
 });
 
+/** Create a new application from what the LLM read out of an unmatched email. */
+router.post("/:id/create-application", async (req, res) => {
+  if (!isDbConnected()) return res.status(503).json({ ok: false, error: "No database connected." });
+  const mail = await Mail.findById(req.params.id);
+  if (!mail) return res.status(404).json({ ok: false, error: "Not found." });
+
+  const company = String(req.body.company || mail.extractedCompany || "").trim();
+  const role = String(req.body.role || mail.extractedRole || "").trim();
+  if (!company || !role) {
+    return res.status(422).json({ ok: false, error: "Need a company and role — the email didn't give enough to guess both." });
+  }
+  const status = JOB_STATUSES.includes(req.body.status)
+    ? req.body.status
+    : mail.proposedStatus && JOB_STATUSES.includes(mail.proposedStatus)
+      ? mail.proposedStatus
+      : "applied";
+
+  let app = await JobApplication.findOne({ companyKey: norm(company), roleKey: norm(role) });
+  if (!app) {
+    app = await JobApplication.create({
+      company,
+      role,
+      companyKey: norm(company),
+      roleKey: norm(role),
+      status,
+      contactEmail: mail.from?.address,
+      createdVia: "manual",
+      statusHistory: [{ at: new Date(), from: "to_apply", to: status, via: "email:review", note: "created from a pasted email" }]
+    });
+  }
+  if (mail.extracted?.interviewDate) await recordInterview(app._id, mail.extracted.interviewDate);
+
+  mail.matchedApplication = app._id;
+  mail.statusApplied = true;
+  mail.pendingReview = Boolean(mail.replyDraft);
+  mail.reviewedAt = new Date();
+  await mail.save();
+
+  res.json({ ok: true, mail: mail.toObject(), application: app.toObject() });
+});
+
 router.post("/:id/dismiss", async (req, res) => {
   if (!isDbConnected()) return res.status(503).json({ ok: false, error: "No database connected." });
   const mail = await Mail.findByIdAndUpdate(
@@ -122,12 +247,19 @@ router.post("/:id/dismiss", async (req, res) => {
   res.json({ ok: true, mail: mail.toObject() });
 });
 
+router.delete("/:id", async (req, res) => {
+  if (!isDbConnected()) return res.status(503).json({ ok: false, error: "No database connected." });
+  const gone = await Mail.findByIdAndDelete(req.params.id).catch(() => null);
+  if (!gone) return res.status(404).json({ ok: false, error: "Not found." });
+  res.json({ ok: true });
+});
+
 router.post("/:id/reprocess", async (req, res) => {
   if (!isDbConnected()) return res.status(503).json({ ok: false, error: "No database connected." });
   const mail = await Mail.findById(req.params.id);
   if (!mail) return res.status(404).json({ ok: false, error: "Not found." });
   const result = await processMail(mail).catch((e) => ({ action: "error", reason: e.message }));
-  res.json({ ok: true, result, mail: (await Mail.findById(req.params.id).lean()) });
+  res.json({ ok: true, result, mail: await Mail.findById(req.params.id).lean() });
 });
 
 router.post("/:id/draft", async (req, res) => {
@@ -147,28 +279,6 @@ router.post("/:id/draft", async (req, res) => {
   } catch (e) {
     res.status(502).json({ ok: false, error: e.message });
   }
-});
-
-router.post("/:id/reply", async (req, res) => {
-  if (!isDbConnected()) return res.status(503).json({ ok: false, error: "No database connected." });
-  if (!mailConfigured()) return res.status(503).json({ ok: false, error: "SMTP is not configured." });
-  const mail = await Mail.findById(req.params.id);
-  if (!mail) return res.status(404).json({ ok: false, error: "Not found." });
-
-  const body = String(req.body.body || "").trim();
-  if (body.length < 2) return res.status(422).json({ ok: false, error: "Reply body is empty." });
-
-  try {
-    await sendReply(mail, body, { subject: req.body.subject });
-  } catch (e) {
-    return res.status(502).json({ ok: false, error: `Send failed: ${e.message}` });
-  }
-
-  mail.replyBodySent = body.slice(0, 20000);
-  mail.replySentAt = new Date();
-  mail.pendingReview = false;
-  await mail.save();
-  res.json({ ok: true, mail: mail.toObject() });
 });
 
 export default router;

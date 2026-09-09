@@ -17,15 +17,13 @@ Portfolio/
 │       ├── lib/            analytics tracker + consent gate
 │       └── App.jsx
 ├── server/          Express + MongoDB (Mongoose) API
-│   ├── scripts/poll-mail.mjs    IMAP → LLM → job DB (run by a GitHub Action)
 │   └── src/
 │       ├── data/                portfolio.js, jobSchema.js
 │       ├── models/              Content, Message, Visitor, Session, Event,
 │       │                        JobApplication, Mail, MailSettings
-│       ├── lib/                 geo lookup, UA parsing, admin auth, mailMatcher, mailSend
+│       ├── lib/                 geo lookup, UA parsing, admin auth, mailMatcher
 │       ├── routes/              /api/portfolio, /api/contact, /api/track, /api/admin
 │       └── index.js
-├── .github/workflows/poll-mail.yml   scheduled job-mailbox poller
 ├── render.yaml      Render Blueprint — static client + free API
 └── package.json     root scripts (runs both together)
 ```
@@ -175,51 +173,32 @@ set, `/admin` and all `/api/admin/*` routes return 503. It has four tabs:
   detail drawer with cover letter, interviews, status history, and "Copy JSON"
   for a round-trip LLM update. Schema lives in `server/src/data/jobSchema.js`
   (single source of truth for the model, the API, and the on-page prompt).
-- **Inbox** — job emails, pulled from an IMAP mailbox and classified by an LLM
-  to update the application tracker automatically (see below).
+- **Inbox** — paste a job email, an LLM classifies it and updates the tracker
+  (see below).
 
-### Job-mail pipeline (Inbox tab)
+### Inbox — paste a job email
 
-Incoming job emails (rejections, interview invites, offers, recruiter outreach)
-are read from a mailbox and used to keep the application tracker up to date —
-**without the API needing to stay awake**:
+No mailbox integration: you copy a recruiter / ATS email from wherever you read
+your mail and paste it into `/admin → Inbox`. For each email:
 
 ```
-IMAP mailbox (Purelymail, "Jobs" folder)
-  → scripts/poll-mail.mjs, run every 15 min by a GitHub Action
-      (talks to MongoDB + Gemini directly — Render can stay asleep)
-  → heuristic screen (ATS domains / tracked-company / keywords) — cheap, no LLM
+paste (From / Subject read from the pasted headers, or typed in)
+  → POST /api/admin/mail/paste  (deduped on a content hash)
+  → heuristic screen (ATS domains / tracked-company name / keywords) — no LLM
   → Gemini: which application is this about, and what status?
-  → confidence ≥ threshold  → JobApplication.status updated, logged as "email:auto"
-    lower / ambiguous / backwards transition → queued in the Inbox tab
+       confidence ≥ threshold  → JobApplication.status updated, logged "email:auto"
+       lower / ambiguous / blocked transition → queued in "Needs review"
+       job-related but untracked → "Create + link" a new application from it
   → interview dates are extracted and added to the application
-  → a reply is drafted (never sent automatically)
-  → message marked \Seen and moved to "Jobs/Done"
+  → a reply is drafted — shown with a confidence score, "Copy reply" only,
+    nothing is ever sent
 ```
 
-In `/admin → Inbox` you review the queue, apply/override status, and approve &
-send replies (drafted by the LLM, edited by you). SMTP send + reply drafting go
-through the API (`/api/admin/mail/*`); a confidence score is shown on every
-reply so auto-send can be enabled later via `MailSettings`.
-
-**Setup** (all free except the ~$10/yr mailbox):
-
-1. **Purelymail** — add `goharawan.com`, create `gohar@goharawan.com`, add the
-   DNS records it gives you, and make a **"Jobs"** folder (+ a filter that files
-   recruiting mail into it). Add the account to Outlook/your phone as normal.
-2. **Gemini API key** — free from [aistudio.google.com](https://aistudio.google.com).
-3. **Render** (API service env) — the `sync: false` vars: `GEMINI_API_KEY`,
-   `MAIL_PASS`. The rest are in `render.yaml`.
-4. **GitHub** → repo **Settings → Secrets and variables → Actions**:
-   - Secrets: `MONGO_URI`, `GEMINI_API_KEY`, `MAIL_PASS`
-   - Variables: `MAIL_IMAP_HOST` (`imap.purelymail.com`), `MAIL_IMAP_PORT`
-     (`993`), `MAIL_USER` (`gohar@goharawan.com`), `MAIL_FOLDERS` (`Jobs`),
-     `MAIL_DONE_FOLDER` (`Jobs/Done`), optionally `GEMINI_MODEL`.
-5. The workflow (`.github/workflows/poll-mail.yml`) then runs every 15 min;
-   trigger it manually first from the Actions tab to check it connects.
-
-Nothing is lost if a run fails or the API is asleep — unprocessed mail stays
-unread in the mailbox until a later run handles it.
+The auto-apply confidence threshold is adjustable on the tab (stored in
+`MailSettings`). Everything lives under `/api/admin/mail/*`; the schema and
+matcher are in `server/src/lib/mailMatcher.js`. Needs `GEMINI_API_KEY`
+(free from [aistudio.google.com](https://aistudio.google.com)) on the API
+service — it's in `render.yaml` as a `sync: false` secret.
 
 ### Consent & privacy
 

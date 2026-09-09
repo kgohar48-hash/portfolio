@@ -41,22 +41,12 @@ services:
       - key: ADMIN_JWT_SECRET
         generateValue: true # Render generates a random secret; admin logins survive restarts
 
-      # Job-mailbox pipeline. The API needs SMTP (to send approved replies)
-      # + Gemini (to redraft). IMAP polling runs in GitHub Actions instead.
+      # LLM for the /admin Inbox tab (paste an email → classify → update the
+      # job tracker). Free key from aistudio.google.com.
       - key: GEMINI_API_KEY
-        sync: false # free key from aistudio.google.com — set in the dashboard
+        sync: false # set in the Render dashboard
       - key: GEMINI_MODEL
         value: gemini-2.0-flash
-      - key: MAIL_USER
-        value: gohar@goharawan.com
-      - key: MAIL_FROM
-        value: Gohar Khan Awan <gohar@goharawan.com>
-      - key: MAIL_SMTP_HOST
-        value: smtp.purelymail.com
-      - key: MAIL_SMTP_PORT
-        value: "465"
-      - key: MAIL_PASS
-        sync: false # Purelymail mailbox / app password — set in the dashboard
 
   # Frontend — static React build served from Render's CDN. Static sites are
   # free with no sleep/cold-start behavior.

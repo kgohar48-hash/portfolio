@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 /**
- * Singleton settings doc for the mail pipeline (key: "default").
+ * Singleton settings doc for the mail matcher (key: "default").
  * `statusAutoApplyMinConfidence` also has an env fallback
  * (MAIL_AUTOAPPLY_MIN_CONFIDENCE); the DB value wins when present.
  */
@@ -9,13 +9,9 @@ const mailSettingsSchema = new mongoose.Schema(
   {
     key: { type: String, default: "default", unique: true },
 
-    // status updates: applied automatically at/above this confidence
-    statusAutoApplyMinConfidence: { type: Number, default: 0.72, min: 0, max: 1 },
-
-    // replies: off for now — the user approves & sends every reply from /admin
-    replyAutoSend: { type: Boolean, default: false },
-    replyAutoSendMinConfidence: { type: Number, default: 0.9, min: 0, max: 1 },
-    replyAutoSendTypes: { type: [String], default: [] } // e.g. ["acknowledgement"]
+    // a pasted email at/above this status-confidence updates the application
+    // automatically; below it, it waits in the review queue
+    statusAutoApplyMinConfidence: { type: Number, default: 0.72, min: 0, max: 1 }
   },
   { timestamps: true }
 );

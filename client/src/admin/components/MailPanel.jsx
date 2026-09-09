@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminApi } from "../adminApi";
-import { STATUS_LABEL } from "../jobsMeta";
-import { jobDate } from "../jobsMeta";
+import { STATUS_LABEL, jobDate } from "../jobsMeta";
 import MailDrawer from "./MailDrawer";
 
 const VIEWS = [
@@ -9,7 +8,7 @@ const VIEWS = [
   ["auto", "Auto-applied"],
   ["unmatched", "Unmatched"],
   ["job", "Job-related"],
-  ["all", "All mail"]
+  ["all", "All"]
 ];
 
 const TYPE_LABEL = {
@@ -23,6 +22,17 @@ const TYPE_LABEL = {
   recruiter_outreach: "Recruiter outreach",
   scheduling: "Scheduling",
   other: "Other"
+};
+
+const ACTION_NOTE = {
+  "status-applied": (r) => `Status set to “${STATUS_LABEL[r.to] || r.to}”.`,
+  "queued-for-review": () => "Added — proposed a status change, waiting for your OK.",
+  "review-unmatched": () => "Added — job-related but not matched to an application.",
+  "not-job-related": () => "Didn't look job-related — filed, no action.",
+  "matched-no-change": () => "Matched an application; nothing to change.",
+  "reply-drafted": () => "Added — a reply draft is ready for you.",
+  skipped: () => "Skipped — no job signal found.",
+  error: (r) => `Couldn't classify: ${r.reason}`
 };
 
 function Conf({ v }) {
@@ -40,6 +50,12 @@ export default function MailPanel() {
   const [openId, setOpenId] = useState(() => new URLSearchParams(window.location.search).get("x") || null);
   const [err, setErr] = useState("");
 
+  const [raw, setRaw] = useState("");
+  const [from, setFrom] = useState("");
+  const [subject, setSubject] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState(null);
+
   function load() {
     adminApi.mail
       .list({ view, page, limit: 40 })
@@ -53,12 +69,43 @@ export default function MailPanel() {
   useEffect(() => setPage(1), [view]);
   useEffect(load, [view, page]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const reviewCount = data?.reviewCount ?? 0;
   const threshold = settings?.settings?.statusAutoApplyMinConfidence ?? 0.72;
+  const reviewCount = data?.reviewCount ?? 0;
 
   async function saveThreshold(val) {
     const s = await adminApi.mail.saveSettings({ statusAutoApplyMinConfidence: val });
     setSettings((prev) => ({ ...prev, settings: s.settings }));
+  }
+
+  async function processPaste() {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const res = await adminApi.mail.paste({ raw, from, subject });
+      const noteFn = ACTION_NOTE[res.result?.action] || (() => "Processed.");
+      setNotice({
+        type: res.result?.action === "error" ? "bad" : "good",
+        text: `${res.deduped ? "Already had this email. " : ""}${noteFn(res.result)}`,
+        openId: res.mail?._id
+      });
+      setRaw("");
+      setFrom("");
+      setSubject("");
+      load();
+    } catch (e) {
+      setNotice({ type: "bad", text: e.message });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setStatus(mailId, applicationId, status) {
+    try {
+      await adminApi.mail.apply(mailId, { applicationId, status });
+      load();
+    } catch (e) {
+      setErr(e.message);
+    }
   }
 
   if (err) return <div className="adm-error-banner">{err}</div>;
@@ -71,22 +118,72 @@ export default function MailPanel() {
       )}
       {settings && settings.llm === false && (
         <div className="adm-error-banner">
-          <code>GEMINI_API_KEY</code> isn't set — incoming mail won't be classified. Set it on the API service and in the
-          GitHub Actions secrets.
+          <code>GEMINI_API_KEY</code> isn't set on the API service — emails can't be classified.
         </div>
       )}
 
-      <div className="adm-card adm-card-wide adm-mail-settings">
-        <div>
-          <div className="adm-card-title">Pipeline</div>
-          <div className="adm-card-sub">
-            Job mail is pulled by a scheduled GitHub Action and classified by an LLM. Status changes at or above the
-            confidence below are applied automatically; the rest wait here for you.
-          </div>
+      {/* paste box */}
+      <div className="adm-card adm-card-wide">
+        <div className="adm-card-title">Paste a job email</div>
+        <div className="adm-card-sub">
+          Copy a recruiter / ATS email and paste it below. The LLM matches it to one of your tracked applications,
+          updates the status (auto if it's confident, otherwise it waits in <b>Needs review</b>), and drafts a reply
+          if one is warranted. <b>Nothing is ever sent</b> — you copy the draft yourself.
         </div>
-        {settings?.settings && (
+        <div className="adm-paste-fields">
+          <input
+            className="adm-input adm-input-sm"
+            placeholder="From (e.g. anna@company.com) — optional"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
+          <input
+            className="adm-input adm-input-sm"
+            placeholder="Subject — optional"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
+        </div>
+        <textarea
+          className="adm-json-input"
+          placeholder={"Paste the email here.\nIf you paste the whole thing (with From: / Subject: / Date: lines) those are read automatically."}
+          value={raw}
+          onChange={(e) => setRaw(e.target.value)}
+        />
+        <div className="adm-json-actions">
+          <button className="adm-btn adm-btn-primary adm-btn-sm" disabled={busy || raw.trim().length < 20} onClick={processPaste}>
+            {busy ? "Reading…" : "Process email"}
+          </button>
+          {raw && (
+            <button className="adm-btn adm-btn-ghost adm-btn-sm" onClick={() => { setRaw(""); setFrom(""); setSubject(""); setNotice(null); }}>
+              Clear
+            </button>
+          )}
+        </div>
+        {notice && (
+          <div className={`adm-json-note ${notice.type}`}>
+            {notice.text}{" "}
+            {notice.openId && (
+              <button className="adm-linkbtn" onClick={() => setOpenId(notice.openId)}>
+                open
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* settings */}
+      {settings?.settings && (
+        <div className="adm-card adm-card-wide adm-mail-settings">
+          <div>
+            <div className="adm-card-title">Auto-apply threshold</div>
+            <div className="adm-card-sub">
+              A pasted email updates the application's status automatically when the LLM's status confidence is at or
+              above this. Below it, the change waits in <b>Needs review</b>.
+            </div>
+          </div>
           <label className="adm-mail-threshold">
-            <span>Auto-apply status at ≥ {Math.round(threshold * 100)}%</span>
+            <span>≥ {Math.round(threshold * 100)}%</span>
             <input
               type="range"
               min="0.4"
@@ -94,26 +191,20 @@ export default function MailPanel() {
               step="0.01"
               value={threshold}
               onChange={(e) =>
-                setSettings((prev) => ({
-                  ...prev,
-                  settings: { ...prev.settings, statusAutoApplyMinConfidence: Number(e.target.value) }
-                }))
+                setSettings((p) => ({ ...p, settings: { ...p.settings, statusAutoApplyMinConfidence: Number(e.target.value) } }))
               }
               onPointerUp={(e) => saveThreshold(Number(e.target.value))}
               onKeyUp={(e) => saveThreshold(Number(e.target.value))}
             />
-            <span className="adm-card-sub">
-              Reply auto-send: <b>off</b> — you approve every reply (a confidence score is shown, so you can enable
-              auto-send for high-confidence replies later).
-            </span>
           </label>
-        )}
-      </div>
+        </div>
+      )}
 
+      {/* list */}
       <div className="adm-card adm-card-wide">
         <div className="adm-card-head">
           <div className="adm-card-title">
-            Inbox {reviewCount > 0 && <span className="adm-tag adm-tag-warn">{reviewCount} to review</span>}
+            Processed emails {reviewCount > 0 && <span className="adm-tag adm-tag-warn">{reviewCount} to review</span>}
           </div>
           <div className="adm-tabs adm-subtabs">
             {VIEWS.map(([v, label]) => (
@@ -149,7 +240,7 @@ export default function MailPanel() {
                     {m.matchedApplication
                       ? `${m.matchedApplication.company} — ${m.matchedApplication.role}`
                       : m.isJobRelated
-                        ? <span className="adm-tag">unmatched</span>
+                        ? <span className="adm-tag">{m.extractedCompany ? m.extractedCompany : "unmatched"}</span>
                         : "—"}
                   </td>
                   <td>{m.proposedStatus ? <span className="adm-jstatus" data-s={m.proposedStatus}>{STATUS_LABEL[m.proposedStatus]}</span> : "—"}</td>
@@ -160,8 +251,7 @@ export default function MailPanel() {
                     {!m.appliedAutomatically && m.statusApplied && <span className="adm-tag adm-tag-good">applied</span>}
                     {m.pendingReview && <span className="adm-tag adm-tag-warn">review</span>}
                     {m.dismissed && <span className="adm-tag">dismissed</span>}
-                    {m.replySentAt && <span className="adm-tag adm-tag-good">replied</span>}
-                    {!m.isJobRelated && !m.pendingReview && <span className="adm-tag">not job</span>}
+                    {!m.isJobRelated && !m.pendingReview && !m.dismissed && <span className="adm-tag">not job</span>}
                   </td>
                   <td className="adm-mail-date">{jobDate(m.date)}</td>
                 </tr>
@@ -169,8 +259,7 @@ export default function MailPanel() {
               {data.items.length === 0 && (
                 <tr>
                   <td colSpan={9} className="adm-empty">
-                    Nothing here yet. Once the GitHub Action runs and finds job mail in the <code>Jobs</code> folder,
-                    it shows up here.
+                    Nothing here yet — paste an email above.
                   </td>
                 </tr>
               )}
@@ -183,23 +272,13 @@ export default function MailPanel() {
             ← Prev
           </button>
           <span>Page {page} / {data.pages || 1}</span>
-          <button
-            className="adm-btn adm-btn-ghost adm-btn-sm"
-            disabled={page >= (data.pages || 1)}
-            onClick={() => setPage((p) => p + 1)}
-          >
+          <button className="adm-btn adm-btn-ghost adm-btn-sm" disabled={page >= (data.pages || 1)} onClick={() => setPage((p) => p + 1)}>
             Next →
           </button>
         </div>
       </div>
 
-      {openId && (
-        <MailDrawer
-          id={openId}
-          onClose={() => setOpenId(null)}
-          onChanged={() => load()}
-        />
-      )}
+      {openId && <MailDrawer id={openId} onClose={() => setOpenId(null)} onChanged={load} />}
     </div>
   );
 }
