@@ -82,11 +82,9 @@ export default function App() {
 
   return (
     <>
-      <div className="bg-layer" aria-hidden="true" />
-      <div className="bg-grid" aria-hidden="true" />
       <Nav />
       <main>
-        <Hero person={data.person} />
+        <Hero person={data.person} contact={data.contact} />
         <StatStrip metrics={data.metrics} />
         <About person={data.person} />
         <Skills skills={data.skills} />

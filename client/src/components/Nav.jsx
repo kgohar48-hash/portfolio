@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
   { id: "about", label: "About" },
@@ -47,9 +48,10 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
-          <a href="#contact" className="btn btn-primary nav-cta" style={{ padding: "9px 16px" }}>
+          <a href="#contact" className={active === "contact" ? "active" : ""}>
             Contact
           </a>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

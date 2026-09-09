@@ -44,7 +44,7 @@ export default function StatStrip({ metrics }) {
       <div className="stat-strip">
         {metrics.map((m) => (
           <div className="stat" key={m.label}>
-            <div className="stat-value gradient-text">
+            <div className="stat-value">
               <CountUp value={m.value} />
             </div>
             <div className="stat-label">{m.label}</div>

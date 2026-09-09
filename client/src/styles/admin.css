@@ -20,8 +20,8 @@
   --adm-good: #0ca30c;
   --adm-warn: #fab219;
   --adm-crit: #d03b3b;
-  --adm-mono: "Fragment Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --adm-sans: "Switzer", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --adm-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --adm-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 .adm,

@@ -4,7 +4,23 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#07080d" />
+    <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141416" media="(prefers-color-scheme: dark)" />
+
+    <!-- set the theme before first paint to avoid a flash -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("pf_theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
 
     <title>Gohar Khan Awan — Software Engineer & AI Systems Builder</title>
     <meta
@@ -19,10 +35,10 @@
     <meta property="og:url" content="https://goharawan.com/" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- Fonts are self-hosted (see client/public/fonts + styles/index.css) —
+    <!-- Fonts are self-hosted (see client/public/fonts + styles/fonts.css) —
          no third-party font CDN, so no visitor IP leaves for one. -->
-    <link rel="preload" href="/fonts/clash-display-600.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/switzer-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/newsreader-500.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-400.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>
