@@ -34,7 +34,7 @@ export default function Privacy() {
         <p>
           This is the personal portfolio of <strong>Gohar Khan Awan</strong>. This page explains what
           data the site collects and why. Questions or requests:{" "}
-          <a href="mailto:gohar@grademy.org">gohar@grademy.org</a>.
+          <a href="mailto:gohar@goharawan.com">gohar@goharawan.com</a>.
         </p>
 
         <div className="legal-consent">
@@ -141,7 +141,7 @@ export default function Privacy() {
         <p>
           Under the GDPR you can request access to, correction of, or deletion of your data, object
           to processing, and withdraw consent. To exercise any of these, email{" "}
-          <a href="mailto:gohar@grademy.org">gohar@grademy.org</a>. You also have the right to
+          <a href="mailto:gohar@goharawan.com">gohar@goharawan.com</a>. You also have the right to
           complain to a data protection authority.
         </p>
 

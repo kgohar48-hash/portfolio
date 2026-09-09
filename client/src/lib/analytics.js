@@ -13,7 +13,7 @@ const SID_KEY = "pf_sid";
 const SID_TS_KEY = "pf_sid_ts";
 const SESSION_GAP_MS = 30 * 60 * 1000;
 
-const SECTIONS = ["hero", "about", "skills", "projects", "philosophy", "experience", "education", "contact"];
+const SECTIONS = ["hero", "about", "skills", "projects", "philosophy", "experience", "education", "bookshelf", "contact"];
 
 const state = {
   visitorId: null,

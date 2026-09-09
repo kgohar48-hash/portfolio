@@ -424,8 +424,7 @@ img {
 .portrait-wrap {
   position: relative;
   width: fit-content;
-  margin-bottom: -18px;
-  z-index: 1;
+  margin-bottom: 20px;
 }
 .portrait-glow,
 .portrait-card,
@@ -862,6 +861,74 @@ img {
   font-size: 0.74rem;
   color: var(--good);
   margin-top: 8px;
+}
+
+/* ============================================================
+   BOOKSHELF
+   ============================================================ */
+.books {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+.book-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 22px;
+  align-items: start;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+}
+.book-cover {
+  width: 56px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  box-shadow: var(--shadow);
+}
+.book-cover-blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px;
+  font-family: var(--font-serif);
+  font-size: 0.62rem;
+  line-height: 1.25;
+  color: var(--fg-faint);
+}
+.book-meta {
+  min-width: 0;
+}
+.book-title {
+  font-family: var(--font-serif);
+  font-size: 1.18rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+.book-byline {
+  font-size: 0.9rem;
+  color: var(--fg-dim);
+  margin-top: 3px;
+}
+.book-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.98rem;
+  color: var(--fg-dim);
+  margin-top: 10px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border-strong);
+}
+.book-tags {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-faint);
+  margin-top: 10px;
 }
 
 /* ============================================================

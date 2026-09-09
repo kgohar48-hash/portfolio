@@ -14,6 +14,7 @@ import Projects from "./components/Projects";
 import Philosophy from "./components/Philosophy";
 import Experience from "./components/Experience";
 import Education from "./components/Education";
+import Bookshelf from "./components/Bookshelf";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 
@@ -92,6 +93,7 @@ export default function App() {
         <Philosophy philosophy={data.philosophy} />
         <Experience experience={data.experience} />
         <Education education={data.education} />
+        <Bookshelf bookshelf={data.bookshelf} />
         <Contact contact={data.contact} />
       </main>
       <Footer person={data.person} />

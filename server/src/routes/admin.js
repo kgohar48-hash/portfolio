@@ -10,7 +10,7 @@ import mailRouter from "./adminMail.js";
 
 const router = Router();
 
-const SECTION_ORDER = ["hero", "about", "skills", "projects", "philosophy", "experience", "education", "contact"];
+const SECTION_ORDER = ["hero", "about", "skills", "projects", "philosophy", "experience", "education", "bookshelf", "contact"];
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

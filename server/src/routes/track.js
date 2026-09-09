@@ -18,7 +18,7 @@ const limiter = rateLimit({
   message: { ok: false, error: "Too many tracking requests." }
 });
 
-const SECTION_ORDER = ["hero", "about", "skills", "projects", "philosophy", "experience", "education", "contact"];
+const SECTION_ORDER = ["hero", "about", "skills", "projects", "philosophy", "experience", "education", "bookshelf", "contact"];
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, Number(n) || 0));
 const str = (v, max = 400) => (v == null ? undefined : String(v).slice(0, max));

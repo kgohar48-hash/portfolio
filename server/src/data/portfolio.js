@@ -49,7 +49,7 @@ export const portfolio = {
       name: "MyChatWrap",
       status: "Privacy-first product",
       accent: "violet",
-      url: "",
+      url: "https://mychatwrap.com",
       blurb:
         "A privacy-first WhatsApp chat analyzer that turns any exported chat into a “Wrapped”-style dashboard — with a set of original analytics I designed and built from scratch.",
       details: [
@@ -80,7 +80,7 @@ export const portfolio = {
       name: "VisaAutomate.com",
       status: "Revenue generating",
       accent: "emerald",
-      url: "https://visaautomate.com",
+      url: "",
       blurb:
         "Real-time automation platform built for concurrency, reliability, and cost-efficient throughput.",
       details: [
@@ -95,7 +95,7 @@ export const portfolio = {
       name: "Grademy.org",
       status: "EdTech platform",
       accent: "amber",
-      url: "https://grademy.org",
+      url: "",
       blurb:
         "MERN platform serving students, with analytics-driven iteration and scalable data models.",
       details: [
@@ -158,10 +158,53 @@ export const portfolio = {
     }
   ],
 
+  bookshelf: [
+    {
+      title: "Deliverance from Error",
+      author: "Al-Ghazali",
+      year: "1108",
+      coverId: "deliverance-from-error",
+      quote: "",
+      tags: ["islam", "epistemology", "doubt"]
+    },
+    {
+      title: "White Nights",
+      author: "Fyodor Dostoevsky",
+      year: "1848",
+      coverId: "white-nights",
+      quote: "",
+      tags: ["solitude", "longing", "romanticism"]
+    },
+    {
+      title: "On the Genealogy of Morals",
+      author: "Friedrich Nietzsche",
+      year: "1887",
+      coverId: "genealogy-of-morals",
+      quote: "any meaning is better than no meaning at all",
+      tags: ["morality", "ressentiment", "genealogy"]
+    },
+    {
+      title: "Thinking, Fast and Slow",
+      author: "Daniel Kahneman",
+      year: "2011",
+      coverId: "thinking-fast-slow",
+      quote: "",
+      tags: ["cognition", "biases", "decision-making"]
+    },
+    {
+      title: "The Courage to Be Disliked",
+      author: "Ichiro Kishimi & Fumitake Koga",
+      year: "2013",
+      coverId: "courage-to-be-disliked",
+      quote: "",
+      tags: ["adlerian psychology", "freedom", "relationships"]
+    }
+  ],
+
   contact: {
-    email: "gohar@grademy.org",
+    email: "gohar@goharawan.com",
     links: [
-      { label: "Email", value: "gohar@grademy.org", href: "mailto:gohar@grademy.org" },
+      { label: "Email", value: "gohar@goharawan.com", href: "mailto:gohar@goharawan.com" },
       { label: "LinkedIn", value: "linkedin.com/in/kgohar48", href: "https://linkedin.com/in/kgohar48" },
       { label: "GitHub", value: "github.com/kgohar48-hash", href: "https://github.com/kgohar48-hash" }
     ]
