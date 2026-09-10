@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getConsent, setConsent } from "../lib/consent";
 import "../styles/index.css";
 
-const UPDATED = "2 September 2026";
+const UPDATED = "10 September 2026";
 
 export default function Privacy() {
   const [choice, setChoice] = useState(getConsent());
@@ -123,7 +123,17 @@ export default function Privacy() {
           Global Privacy Control signal, analytics stay off and you won't see the consent prompt.
         </p>
 
-        <h2>3. Hosting &amp; processors</h2>
+        <h2>3. CV / résumé links</h2>
+        <p>
+          When I send someone a link to a CV I generated for a specific role (a{" "}
+          <code>goharawan.com/cv/…</code> address), that page and the links on it carry a token tied
+          to that application. It lets me see whether the CV was opened and whether its links were
+          followed, so I know a recruiter engaged with it. Legal basis: my legitimate interest in
+          managing my own job search (GDPR Art. 6(1)(f)). This applies only to those private,
+          individually shared links — not to the public portfolio.
+        </p>
+
+        <h2>4. Hosting &amp; processors</h2>
         <ul>
           <li>
             <strong>Render</strong> — hosts the website and API.
@@ -137,7 +147,7 @@ export default function Privacy() {
           </li>
         </ul>
 
-        <h2>4. Your rights</h2>
+        <h2>5. Your rights</h2>
         <p>
           Under the GDPR you can request access to, correction of, or deletion of your data, object
           to processing, and withdraw consent. To exercise any of these, email{" "}

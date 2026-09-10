@@ -7,6 +7,7 @@ import Event from "../models/Event.js";
 import { adminConfigured, verifyPassword, issueToken, requireAdmin } from "../lib/adminAuth.js";
 import jobsRouter from "./adminJobs.js";
 import mailRouter from "./adminMail.js";
+import cvRouter from "./adminCv.js";
 
 const router = Router();
 
@@ -40,6 +41,8 @@ router.get("/me", (_req, res) => res.json({ ok: true, admin: true }));
 router.use("/jobs", jobsRouter);
 // Job-mailbox inbox + LLM matcher
 router.use("/mail", mailRouter);
+// CV / cover-letter generator
+router.use("/cv", cvRouter);
 
 function rangeToStart(range) {
   const now = Date.now();
@@ -259,7 +262,7 @@ router.get("/sessions", async (req, res) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .select(
-        "sessionId visitorId startedAt durationMs engagedMs isReturning visitNumber isBot bounced geo device channel source referrerHost maxScrollPct clickCount outboundClickCount sectionsViewed contactSubmitted"
+        "sessionId visitorId startedAt durationMs engagedMs isReturning visitNumber isBot bounced geo device channel source referrerHost maxScrollPct clickCount outboundClickCount sectionsViewed contactSubmitted cvSlug"
       )
       .lean(),
     Session.countDocuments(match)
@@ -282,6 +285,7 @@ router.get("/visitors", async (req, res) => {
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 40));
   const filter = {};
   if (req.query.returning === "1") filter.sessionCount = { $gt: 1 };
+  if (req.query.known === "1") filter.knownVia = { $exists: true, $ne: null };
 
   const [items, total] = await Promise.all([
     Visitor.find(filter)

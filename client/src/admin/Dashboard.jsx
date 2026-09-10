@@ -8,6 +8,7 @@ import SessionsTable from "./components/SessionsTable";
 import VisitorsTable from "./components/VisitorsTable";
 import JobsPanel from "./components/JobsPanel";
 import MailPanel from "./components/MailPanel";
+import CvPanel from "./components/CvPanel";
 
 const RANGES = [
   ["24h", "24 hours"],
@@ -20,13 +21,14 @@ const RANGES = [
 
 const CHANNEL_LABEL = { organic: "Search", social: "Social", referral: "Referral", direct: "Direct", campaign: "Campaign" };
 
-const VALID_TABS = ["overview", "sessions", "visitors", "jobs", "inbox"];
+const VALID_TABS = ["overview", "sessions", "visitors", "jobs", "inbox", "cv"];
 const TAB_LABEL = {
   overview: "Overview",
   sessions: "Sessions",
   visitors: "Visitors",
   jobs: "Job applications",
-  inbox: "Inbox"
+  inbox: "Inbox",
+  cv: "CV generator"
 };
 
 export default function Dashboard({ onLogout }) {
@@ -160,6 +162,7 @@ export default function Dashboard({ onLogout }) {
         {tab === "visitors" && <VisitorsTable />}
         {tab === "jobs" && <JobsPanel />}
         {tab === "inbox" && <MailPanel />}
+        {tab === "cv" && <CvPanel />}
       </main>
     </div>
   );

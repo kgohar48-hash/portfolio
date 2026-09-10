@@ -11,7 +11,9 @@ const Root =
     ? React.lazy(() => import("./admin/AdminApp.jsx"))
     : path === "/privacy"
       ? React.lazy(() => import("./pages/Privacy.jsx"))
-      : React.lazy(() => import("./App.jsx"));
+      : path.startsWith("/cv/")
+        ? React.lazy(() => import("./pages/CvPage.jsx"))
+        : React.lazy(() => import("./App.jsx"));
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

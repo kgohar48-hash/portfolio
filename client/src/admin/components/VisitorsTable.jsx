@@ -6,28 +6,34 @@ export default function VisitorsTable() {
   const [data, setData] = useState({ items: [], pages: 1, total: 0 });
   const [page, setPage] = useState(1);
   const [returningOnly, setReturningOnly] = useState(false);
+  const [knownOnly, setKnownOnly] = useState(false);
   const [open, setOpen] = useState(null);
 
-  useEffect(() => setPage(1), [returningOnly]);
+  useEffect(() => setPage(1), [returningOnly, knownOnly]);
 
   useEffect(() => {
     let alive = true;
     adminApi
-      .visitors({ page, limit: 40, returning: returningOnly ? 1 : 0 })
+      .visitors({ page, limit: 40, returning: returningOnly ? 1 : 0, known: knownOnly ? 1 : 0 })
       .then((d) => alive && setData(d))
       .catch(() => alive && setData({ items: [], pages: 1, total: 0 }));
     return () => {
       alive = false;
     };
-  }, [page, returningOnly]);
+  }, [page, returningOnly, knownOnly]);
 
   return (
     <div className="adm-card adm-card-wide">
       <div className="adm-card-head">
         <div className="adm-card-title">Visitors {data.total ? `(${compactNum(data.total)})` : ""}</div>
-        <label className="adm-check">
-          <input type="checkbox" checked={returningOnly} onChange={(e) => setReturningOnly(e.target.checked)} /> Returning only
-        </label>
+        <div className="adm-check-row">
+          <label className="adm-check">
+            <input type="checkbox" checked={knownOnly} onChange={(e) => setKnownOnly(e.target.checked)} /> Known only
+          </label>
+          <label className="adm-check">
+            <input type="checkbox" checked={returningOnly} onChange={(e) => setReturningOnly(e.target.checked)} /> Returning only
+          </label>
+        </div>
       </div>
 
       <div className="adm-table-scroll">
@@ -50,6 +56,11 @@ export default function VisitorsTable() {
                   <td>
                     <span className="adm-vid">{v.visitorId.slice(0, 8)}</span>
                     {v.sessionCount > 1 && <span className="adm-tag adm-tag-return">×{v.sessionCount}</span>}
+                    {v.label && (
+                      <div className="adm-vid-label" title={`Known via ${v.knownVia}`}>
+                        ★ {v.label}
+                      </div>
+                    )}
                   </td>
                   <td title={dateTime(v.firstSeenAt)}>{timeAgo(v.firstSeenAt)}</td>
                   <td title={dateTime(v.lastSeenAt)}>{timeAgo(v.lastSeenAt)}</td>

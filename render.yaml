@@ -34,6 +34,10 @@ services:
         value: production
       - key: CLIENT_ORIGIN
         value: https://goharawan.com,https://www.goharawan.com
+      # Absolute origin of this API service — used to build the CV tracking-link
+      # redirects (api.goharawan.com/r/<slug>/<target>) that go into generated CVs.
+      - key: API_PUBLIC_ORIGIN
+        value: https://api.goharawan.com
       - key: MONGO_URI
         sync: false # set in the Render dashboard — never committed to the repo
       - key: ADMIN_PASSWORD

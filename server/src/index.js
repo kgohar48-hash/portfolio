@@ -13,6 +13,8 @@ import portfolioRoutes from "./routes/portfolio.js";
 import contactRoutes from "./routes/contact.js";
 import trackRoutes from "./routes/track.js";
 import adminRoutes from "./routes/admin.js";
+import cvRoutes from "./routes/cv.js";
+import goRoutes from "./routes/go.js";
 import { adminConfigured } from "./lib/adminAuth.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -64,7 +66,12 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/track", trackRoutes);
+app.use("/api/cv", cvRoutes);
 app.use("/api/admin", adminRoutes);
+
+// Per-employer CV tracking redirects (goharawan.com/cv links point here).
+// Top-level, not under /api — plain navigations, no CORS needed.
+app.use("/r", goRoutes);
 
 // Serve the built client in production, for a single-service deploy.
 // Not used on Render (render.yaml runs the client as its own static site),

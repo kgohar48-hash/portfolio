@@ -49,6 +49,30 @@ const jobApplicationSchema = new mongoose.Schema(
     notes: { type: String, maxlength: 10000 },
     tags: { type: [String], default: [] },
 
+    // --- CV generator / employer-outreach tracking ---
+    cvSlug: { type: String, index: true }, // most recent generated CV
+    cvSlugs: { type: [String], default: [] }, // every CV generated for this job
+    cvUrl: { type: String, maxlength: 500 },
+    employerViewCount: { type: Number, default: 0 },
+    employerLastViewAt: { type: Date },
+    cvActivity: {
+      type: [
+        {
+          _id: false,
+          type: { type: String, enum: ["open", "link_click", "site_visit"] },
+          target: String,
+          at: { type: Date, default: Date.now },
+          sessionId: String,
+          visitorId: String,
+          city: String,
+          country: String,
+          device: String,
+          isBot: { type: Boolean, default: false }
+        }
+      ],
+      default: []
+    },
+
     interviews: { type: [interviewSchema], default: [] },
     statusHistory: {
       type: [
@@ -63,7 +87,7 @@ const jobApplicationSchema = new mongoose.Schema(
       ],
       default: []
     },
-    createdVia: { type: String, enum: ["manual", "json"], default: "manual" },
+    createdVia: { type: String, enum: ["manual", "json", "cv"], default: "manual" },
     lastJson: mongoose.Schema.Types.Mixed
   },
   { timestamps: true }

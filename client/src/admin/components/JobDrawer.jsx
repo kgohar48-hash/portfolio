@@ -132,6 +132,37 @@ export default function JobDrawer({ id, onClose, onChange, onDelete }) {
               <Row k="Added" v={`${jobDate(job.createdAt)} · via ${job.createdVia}`} />
             </div>
 
+            {(job.cvUrl || job.cvActivity?.length > 0) && (
+              <Block title="CV & outreach">
+                {job.cvUrl && (
+                  <div className="adm-jd-cv-links">
+                    <a className="adm-btn adm-btn-ghost adm-btn-sm" href={job.cvUrl} target="_blank" rel="noreferrer">
+                      Open CV
+                    </a>
+                    <span className="adm-kv-v">
+                      {job.employerViewCount || 0} employer views
+                      {job.employerLastViewAt ? ` · last ${jobDate(job.employerLastViewAt)}` : ""}
+                    </span>
+                  </div>
+                )}
+                {job.cvActivity?.length > 0 && (
+                  <ul className="adm-jd-act">
+                    {[...job.cvActivity]
+                      .sort((a, b) => new Date(b.at) - new Date(a.at))
+                      .slice(0, 30)
+                      .map((e, i) => (
+                        <li key={i} className={e.isBot ? "adm-dim" : ""}>
+                          <span className="adm-timeline-t">{new Date(e.at).toLocaleString()}</span>
+                          {e.type === "open" ? "Opened CV" : e.type === "link_click" ? `Clicked ${e.target}` : "Visited portfolio"}
+                          {(e.city || e.country) && ` · ${[e.city, e.country].filter(Boolean).join(", ")}`}
+                          {e.isBot && " · scanner"}
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </Block>
+            )}
+
             {job.summary && <Block title="Summary"><p>{job.summary}</p></Block>}
 
             <ListBlock title="Key requirements" items={job.keyRequirements} />

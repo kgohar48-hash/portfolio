@@ -9,6 +9,11 @@ const visitorSchema = new mongoose.Schema(
   {
     visitorId: { type: String, required: true, unique: true, index: true },
 
+    // set when a visit is attributed to a CV tracking link (?ref=<slug>)
+    label: { type: String }, // e.g. "Celonis — Senior Data Engineer"
+    knownVia: { type: String, index: true }, // "cv"
+    cvSlugs: { type: [String], default: [] },
+
     firstSeenAt: { type: Date, required: true },
     lastSeenAt: { type: Date, required: true, index: true },
 

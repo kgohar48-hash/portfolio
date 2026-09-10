@@ -4,8 +4,12 @@ import { isDbConnected } from "../config/db.js";
 import Visitor from "../models/Visitor.js";
 import Session from "../models/Session.js";
 import Event from "../models/Event.js";
+import Cv from "../models/Cv.js";
 import { clientIp, parseUserAgent, deriveAcquisition, hostOf } from "../lib/enrich.js";
 import { geolocate } from "../lib/geo.js";
+import { recordCvActivity } from "../lib/jobs.js";
+
+const REF_RE = /^[A-Za-z0-9_-]{6,16}$/;
 
 const router = Router();
 
@@ -81,6 +85,13 @@ async function handleStart(req, body) {
   const currentHost = hostOf(context.landingUrl) || undefined;
   const { source, channel } = deriveAcquisition({ referrer, utm, currentHost });
 
+  // ?ref=<slug> — the visitor arrived via a CV tracking link
+  const ref = str(context.ref, 16);
+  const cv =
+    ref && REF_RE.test(ref)
+      ? await Cv.findOne({ slug: ref }).select("slug company role jobApplication").lean().catch(() => null)
+      : null;
+
   const prior = await Visitor.findOne({ visitorId }).lean();
   const isReturning = Boolean(prior);
   const visitNumber = (prior?.sessionCount || 0) + 1;
@@ -141,8 +152,24 @@ async function handleStart(req, body) {
     source,
     channel,
     utm,
+    ref: ref || undefined,
+    cvSlug: cv?.slug,
     entrySection: str(context.entrySection, 40)
   });
+
+  const visitorSet = {
+    lastSeenAt: now,
+    lastGeo: geo
+      ? { city: geo.city, region: geo.region, country: geo.country, countryCode: geo.countryCode }
+      : undefined,
+    lastDevice: { browser: device.browser, os: device.os, deviceType: device.deviceType },
+    lastChannel: channel,
+    lastSource: source
+  };
+  if (cv) {
+    visitorSet.label = `${cv.company} — ${cv.role}`;
+    visitorSet.knownVia = "cv";
+  }
 
   await Visitor.findOneAndUpdate(
     { visitorId },
@@ -157,19 +184,51 @@ async function handleStart(req, body) {
         firstUtm: utm,
         firstLandingUrl: str(context.landingUrl, 800)
       },
-      $set: {
-        lastSeenAt: now,
-        lastGeo: geo
-          ? { city: geo.city, region: geo.region, country: geo.country, countryCode: geo.countryCode }
-          : undefined,
-        lastDevice: { browser: device.browser, os: device.os, deviceType: device.deviceType },
-        lastChannel: channel,
-        lastSource: source
-      },
+      $set: visitorSet,
+      ...(cv ? { $addToSet: { cvSlugs: cv.slug } } : {}),
       $inc: { sessionCount: 1 }
     },
     { upsert: true }
   );
+
+  // record the employer's site visit against the CV and its job application
+  if (cv) {
+    try {
+      await Cv.updateOne(
+        { _id: cv._id },
+        {
+          $push: {
+            visits: {
+              $each: [
+                {
+                  at: now,
+                  sessionId,
+                  visitorId,
+                  city: geo?.city,
+                  country: geo?.country,
+                  device: device.deviceType
+                }
+              ],
+              $slice: -300
+            }
+          },
+          $inc: { visitCount: 1 }
+        }
+      );
+      await recordCvActivity(cv.jobApplication, {
+        type: "site_visit",
+        at: now,
+        sessionId,
+        visitorId,
+        city: geo?.city,
+        country: geo?.country,
+        device: device.deviceType,
+        isBot: device.isBot
+      });
+    } catch {
+      /* attribution must never break session creation */
+    }
+  }
 }
 
 async function handleBatch(body) {

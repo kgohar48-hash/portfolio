@@ -86,6 +86,8 @@ const sessionSchema = new mongoose.Schema(
     landingPath: String,
     source: String, // e.g. "google", "linkedin.com", "direct"
     channel: String, // organic | social | referral | direct | campaign
+    ref: String, // raw ?ref= token, if present
+    cvSlug: { type: String, index: true }, // set when ?ref= matches a generated CV
     utm: {
       source: String,
       medium: String,

@@ -94,6 +94,19 @@ function parseUtm(params) {
   };
 }
 
+/**
+ * ?ref=<slug> marks a visit that came from a CV tracking link. Persist it for
+ * the session so client-side navigation within the site keeps the attribution.
+ */
+function readRef(params) {
+  const fromUrl = params.get("ref");
+  if (fromUrl && /^[A-Za-z0-9_-]{6,16}$/.test(fromUrl)) {
+    safeSession((s) => s.setItem("pf_ref", fromUrl));
+    return fromUrl;
+  }
+  return safeSession((s) => s.getItem("pf_ref")) || undefined;
+}
+
 function collectContext() {
   const nav = navigator;
   const conn = nav.connection || nav.mozConnection || nav.webkitConnection || {};
@@ -120,6 +133,7 @@ function collectContext() {
     landingPath: window.location.pathname,
     entrySection: "hero",
     utm: parseUtm(params),
+    ref: readRef(params),
     screen: {
       width: window.screen?.width,
       height: window.screen?.height,

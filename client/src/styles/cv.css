@@ -1,0 +1,190 @@
+/* Standalone stylesheet for the hosted CV page (goharawan.com/cv/<slug>).
+   Deliberately LaTeX-résumé-like: centred serif masthead, small-caps ruled
+   section headers, right-aligned date columns, tight bullets. Its own chunk —
+   never loaded by the main site or the admin. */
+
+@import "./fonts.css";
+
+:root {
+  --cv-ink: #16171a;
+  --cv-dim: #444;
+  --cv-faint: #6b6b6b;
+  --cv-rule: #c9c7c1;
+  --cv-link: #1a4fb4;
+  --cv-serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --cv-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --cv-paper: #fbfaf7;
+}
+
+* { box-sizing: border-box; }
+
+.cv-body {
+  margin: 0;
+  background: #edece8;
+  color: var(--cv-ink);
+  font-family: var(--cv-serif);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cv-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(237, 236, 232, 0.9);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid #dcdad4;
+}
+.cv-btn {
+  font-family: var(--cv-mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border: 1px solid var(--cv-ink);
+  border-radius: 6px;
+  background: var(--cv-ink);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+}
+.cv-btn.ghost { background: transparent; color: var(--cv-ink); }
+.cv-btn:hover { opacity: 0.85; }
+
+.cv-sheet {
+  max-width: 820px;
+  margin: 28px auto 64px;
+  padding: 56px 64px;
+  background: var(--cv-paper);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* masthead */
+.cv-name {
+  margin: 0;
+  text-align: center;
+  font-weight: 500;
+  font-size: 2.5rem;
+  letter-spacing: 0.01em;
+}
+.cv-title {
+  text-align: center;
+  margin: 6px 0 2px;
+  font-family: var(--cv-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cv-faint);
+}
+.cv-loc {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--cv-dim);
+}
+.cv-contacts {
+  text-align: center;
+  margin-top: 3px;
+  font-size: 0.9rem;
+  color: var(--cv-dim);
+}
+.cv-contact { white-space: nowrap; }
+.cv-contacts a { color: var(--cv-link); text-decoration: none; }
+.cv-contacts a:hover { text-decoration: underline; }
+.cv-contacts .sep { margin: 0 8px; color: var(--cv-rule); }
+
+/* sections */
+.cv-section { margin-top: 26px; }
+.cv-section > h2 {
+  margin: 0 0 12px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--cv-ink);
+  font-family: var(--cv-mono);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cv-summary { margin: 0; text-align: justify; }
+
+.cv-entry { margin-bottom: 14px; }
+.cv-entry:last-child { margin-bottom: 0; }
+.cv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.cv-row .l { font-weight: 600; }
+.cv-row .r {
+  font-family: var(--cv-mono);
+  font-size: 0.72rem;
+  color: var(--cv-faint);
+  white-space: nowrap;
+}
+.cv-subrow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-style: italic;
+  color: var(--cv-dim);
+  font-size: 0.95rem;
+}
+.cv-entry ul {
+  margin: 5px 0 0;
+  padding-left: 18px;
+}
+.cv-entry li {
+  margin: 2px 0;
+  font-size: 0.95rem;
+  color: var(--cv-dim);
+}
+.cv-entry li::marker { color: var(--cv-faint); }
+
+.cv-proj-name { color: var(--cv-link); text-decoration: none; font-weight: 600; }
+.cv-proj-name:hover { text-decoration: underline; }
+
+.cv-skills { display: grid; gap: 5px; }
+.cv-skill-row { font-size: 0.95rem; }
+.cv-skill-row b { font-weight: 600; }
+
+.cv-extras { display: grid; gap: 3px; font-size: 0.92rem; color: var(--cv-dim); }
+.cv-extras b { font-weight: 600; color: var(--cv-ink); }
+
+.cv-state {
+  max-width: 480px;
+  margin: 20vh auto;
+  text-align: center;
+  font-family: var(--cv-mono);
+  font-size: 0.85rem;
+  color: var(--cv-faint);
+}
+
+@media (max-width: 640px) {
+  .cv-sheet { padding: 32px 22px; margin: 12px; }
+  .cv-name { font-size: 1.9rem; }
+  .cv-row, .cv-subrow { flex-direction: column; gap: 2px; }
+  .cv-row .r { font-size: 0.68rem; }
+}
+
+@media print {
+  .cv-body { background: #fff; }
+  .cv-toolbar { display: none !important; }
+  .cv-sheet {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+  @page { size: A4; margin: 14mm 16mm; }
+  .cv-contacts a, .cv-proj-name { color: #000; }
+  .cv-section { break-inside: avoid; }
+  .cv-entry { break-inside: avoid; }
+}

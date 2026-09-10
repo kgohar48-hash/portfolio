@@ -1255,3 +1255,149 @@
 .adm-mail-create .adm-card-sub {
   margin-bottom: 0;
 }
+
+/* ---------- CV generator ---------- */
+.adm-cv {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.adm-cv-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.adm-cv-form-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.adm-cv-form-row label {
+  flex: 1;
+  min-width: 200px;
+}
+.adm-cv-form label {
+  display: block;
+}
+.adm-cv-form label > span {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--adm-text-faint);
+  margin-bottom: 4px;
+}
+.adm-cv-jd {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  font-family: var(--adm-mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.adm-cv-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.adm-note-good {
+  font-size: 0.82rem;
+  color: var(--adm-good);
+}
+.adm-note-bad {
+  font-size: 0.82rem;
+  color: var(--adm-crit);
+}
+.adm-note-good a,
+.adm-note-bad a {
+  color: inherit;
+}
+.adm-cv-master {
+  margin-top: 12px;
+}
+.adm-cv-master-ta {
+  width: 100%;
+  min-height: 340px;
+  resize: vertical;
+  font-family: var(--adm-mono);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+.adm-cv-drawer-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+}
+.adm-cv-cover {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  font-family: var(--adm-sans);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+.adm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-timeline li.adm-dim,
+li.adm-dim {
+  opacity: 0.5;
+}
+.adm-cv-json {
+  margin-top: 14px;
+  font-size: 0.78rem;
+}
+.adm-cv-json summary {
+  cursor: pointer;
+  color: var(--adm-text-faint);
+}
+.adm-cv-json pre {
+  margin-top: 8px;
+  max-height: 320px;
+  overflow: auto;
+  background: var(--adm-surface-2);
+  border: 1px solid var(--adm-border);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: var(--adm-mono);
+  font-size: 0.72rem;
+}
+.adm-check-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.adm-vid-label {
+  margin-top: 3px;
+  font-size: 0.74rem;
+  color: var(--adm-warn);
+}
+
+/* ---------- CV & outreach block on the job drawer ---------- */
+.adm-jd-cv-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.adm-jd-act {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+.adm-jd-act li {
+  font-size: 0.8rem;
+  color: var(--adm-text-dim);
+}
+.adm-jd-act li.adm-dim {
+  opacity: 0.5;
+}
+.adm-jd-act .adm-timeline-t {
+  margin-right: 8px;
+}
