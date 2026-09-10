@@ -3,7 +3,7 @@
  * output. Used by the mail matcher (Inbox tab) and the CV generator.
  */
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 /**
  * @param {object}  opts
