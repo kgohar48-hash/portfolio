@@ -41,13 +41,13 @@ function sanitiseCv(raw, master) {
     title: master.title,
     location: master.location,
     summary: clampStr(raw.summary, 2000),
-    skills: clampArr(
-      (raw.skills || []).map((g) => ({
-        group: clampStr(g.group, 120),
-        items: clampArr(g.items, 30, 200)
-      })).filter((g) => g.group && g.items.length),
-      12
-    ),
+    skills: (raw.skills || [])
+      .map((g) => ({
+        group: clampStr(g && g.group, 120),
+        items: clampArr(g && g.items, 30, 200)
+      }))
+      .filter((g) => g.group && g.items.length)
+      .slice(0, 12),
     education: (raw.education || []).slice(0, 6).map((e) => ({
       school: clampStr(e.school, 200),
       degree: clampStr(e.degree, 200),
@@ -78,10 +78,10 @@ function sanitiseCv(raw, master) {
         };
       })
       .filter((p) => p.name),
-    extras: clampArr(
-      (raw.extras || []).map((x) => ({ label: clampStr(x.label, 60), value: clampStr(x.value, 400) })).filter((x) => x.label && x.value),
-      8
-    )
+    extras: (raw.extras || [])
+      .map((x) => ({ label: clampStr(x && x.label, 60), value: clampStr(x && x.value, 400) }))
+      .filter((x) => x.label && x.value)
+      .slice(0, 8)
   };
 }
 

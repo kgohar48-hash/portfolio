@@ -52,6 +52,16 @@ export default function CvPage() {
 
   const { data, contacts, links } = state.cv;
 
+  // tolerate malformed sections rather than crash the whole page
+  const arr = (v) => (Array.isArray(v) ? v : []);
+  const skills = arr(data.skills)
+    .filter((g) => g && typeof g === "object" && g.group && Array.isArray(g.items) && g.items.length)
+    .map((g) => ({ group: g.group, items: g.items.filter(Boolean) }));
+  const extras = arr(data.extras).filter((x) => x && typeof x === "object" && x.label && x.value);
+  const experience = arr(data.experience).filter((x) => x && x.role);
+  const projects = arr(data.projects).filter((p) => p && p.name);
+  const education = arr(data.education).filter((e) => e && e.degree);
+
   return (
     <>
       <div className="cv-toolbar">
@@ -84,12 +94,12 @@ export default function CvPage() {
           </section>
         )}
 
-        {data.skills?.length > 0 && (
+        {skills.length > 0 && (
           <section className="cv-section">
             <h2>Skills</h2>
             <div className="cv-skills">
-              {data.skills.map((g) => (
-                <div className="cv-skill-row" key={g.group}>
+              {skills.map((g, i) => (
+                <div className="cv-skill-row" key={g.group || i}>
                   <b>{g.group}:</b> {g.items.join(", ")}
                 </div>
               ))}
@@ -97,10 +107,10 @@ export default function CvPage() {
           </section>
         )}
 
-        {data.experience?.length > 0 && (
+        {experience.length > 0 && (
           <section className="cv-section">
             <h2>Experience</h2>
-            {data.experience.map((x, i) => (
+            {experience.map((x, i) => (
               <div className="cv-entry" key={i}>
                 <div className="cv-row">
                   <span className="l">{x.role}</span>
@@ -122,10 +132,10 @@ export default function CvPage() {
           </section>
         )}
 
-        {data.projects?.length > 0 && (
+        {projects.length > 0 && (
           <section className="cv-section">
             <h2>Projects</h2>
-            {data.projects.map((p, i) => (
+            {projects.map((p, i) => (
               <div className="cv-entry" key={i}>
                 <div className="cv-row">
                   <span className="l">
@@ -152,10 +162,10 @@ export default function CvPage() {
           </section>
         )}
 
-        {data.education?.length > 0 && (
+        {education.length > 0 && (
           <section className="cv-section">
             <h2>Education</h2>
-            {data.education.map((e, i) => (
+            {education.map((e, i) => (
               <div className="cv-entry" key={i}>
                 <div className="cv-row">
                   <span className="l">{e.degree}</span>
@@ -177,12 +187,12 @@ export default function CvPage() {
           </section>
         )}
 
-        {data.extras?.length > 0 && (
+        {extras.length > 0 && (
           <section className="cv-section">
             <h2>Additional</h2>
             <div className="cv-extras">
-              {data.extras.map((x) => (
-                <div key={x.label}>
+              {extras.map((x, i) => (
+                <div key={x.label || i}>
                   <b>{x.label}:</b> {x.value}
                 </div>
               ))}
