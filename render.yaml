@@ -34,10 +34,6 @@ services:
         value: production
       - key: CLIENT_ORIGIN
         value: https://goharawan.com,https://www.goharawan.com
-      # Absolute origin of this API service — used to build the CV tracking-link
-      # redirects (api.goharawan.com/r/<slug>/<target>) that go into generated CVs.
-      - key: API_PUBLIC_ORIGIN
-        value: https://api.goharawan.com
       - key: MONGO_URI
         sync: false # set in the Render dashboard — never committed to the repo
       - key: ADMIN_PASSWORD
@@ -65,6 +61,16 @@ services:
       - key: VITE_API_BASE
         value: https://api.goharawan.com
     routes:
+      # Tracking links (CV-generated and hand-picked custom links) are shared
+      # as goharawan.com/r/<slug>/<target> for a clean, trusted-looking domain.
+      # The actual redirect + click logging lives on the API service (it needs
+      # a database), so forward here first. Must come before the catch-all
+      # rewrite below — first match wins. Verify after deploy: this relies on
+      # Render's static-site redirect rules supporting a :splat wildcard the
+      # same way its rewrite rules do.
+      - type: redirect
+        source: /r/*
+        destination: https://api.goharawan.com/r/:splat
       - type: rewrite
         source: /*
         destination: /index.html

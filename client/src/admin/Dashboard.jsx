@@ -28,7 +28,7 @@ const TAB_LABEL = {
   visitors: "Visitors",
   jobs: "Job applications",
   inbox: "Inbox",
-  cv: "CV generator"
+  cv: "CV & links"
 };
 
 export default function Dashboard({ onLogout }) {

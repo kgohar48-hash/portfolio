@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { adminApi } from "../adminApi";
 import { jobDate } from "../jobsMeta";
 import CvDrawer from "./CvDrawer";
+import LinksPanel from "./LinksPanel";
 
 function CopyButton({ text, label = "Copy link", done = "Copied ✓" }) {
   const [ok, setOk] = useState(false);
@@ -203,6 +204,8 @@ export default function CvPanel() {
           </div>
         )}
       </section>
+
+      <LinksPanel />
 
       <section className="adm-card">
         <div className="adm-card-title">

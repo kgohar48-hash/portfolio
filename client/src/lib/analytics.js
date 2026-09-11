@@ -100,7 +100,7 @@ function parseUtm(params) {
  */
 function readRef(params) {
   const fromUrl = params.get("ref");
-  if (fromUrl && /^[A-Za-z0-9_-]{6,16}$/.test(fromUrl)) {
+  if (fromUrl && /^[A-Za-z0-9_-]{3,40}$/.test(fromUrl)) {
     safeSession((s) => s.setItem("pf_ref", fromUrl));
     return fromUrl;
   }

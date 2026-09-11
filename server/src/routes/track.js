@@ -5,11 +5,13 @@ import Visitor from "../models/Visitor.js";
 import Session from "../models/Session.js";
 import Event from "../models/Event.js";
 import Cv from "../models/Cv.js";
+import Link from "../models/Link.js";
 import { clientIp, parseUserAgent, deriveAcquisition, hostOf } from "../lib/enrich.js";
 import { geolocate } from "../lib/geo.js";
 import { recordCvActivity } from "../lib/jobs.js";
 
-const REF_RE = /^[A-Za-z0-9_-]{6,16}$/;
+// Matches both a CV's auto-generated slug and a hand-picked custom Link slug.
+const REF_RE = /^[A-Za-z0-9_-]{3,40}$/;
 
 const router = Router();
 
@@ -85,12 +87,16 @@ async function handleStart(req, body) {
   const currentHost = hostOf(context.landingUrl) || undefined;
   const { source, channel } = deriveAcquisition({ referrer, utm, currentHost });
 
-  // ?ref=<slug> — the visitor arrived via a CV tracking link
-  const ref = str(context.ref, 16);
-  const cv =
-    ref && REF_RE.test(ref)
-      ? await Cv.findOne({ slug: ref }).select("slug company role jobApplication").lean().catch(() => null)
-      : null;
+  // ?ref=<slug> — the visitor arrived via a CV tracking link or a custom Link
+  const ref = str(context.ref, 40);
+  let cv = null;
+  let link = null;
+  if (ref && REF_RE.test(ref)) {
+    cv = await Cv.findOne({ slug: ref }).select("slug company role jobApplication").lean().catch(() => null);
+    if (!cv) link = await Link.findOne({ slug: ref }).select("slug label jobApplication").lean().catch(() => null);
+  }
+  // unify: { slug, label, jobApplication } either way
+  const attributed = cv ? { slug: cv.slug, label: `${cv.company} — ${cv.role}`, jobApplication: cv.jobApplication } : link ? { slug: link.slug, label: link.label, jobApplication: link.jobApplication } : null;
 
   const prior = await Visitor.findOne({ visitorId }).lean();
   const isReturning = Boolean(prior);
@@ -153,7 +159,7 @@ async function handleStart(req, body) {
     channel,
     utm,
     ref: ref || undefined,
-    cvSlug: cv?.slug,
+    cvSlug: attributed?.slug,
     entrySection: str(context.entrySection, 40)
   });
 
@@ -166,9 +172,9 @@ async function handleStart(req, body) {
     lastChannel: channel,
     lastSource: source
   };
-  if (cv) {
-    visitorSet.label = `${cv.company} — ${cv.role}`;
-    visitorSet.knownVia = "cv";
+  if (attributed) {
+    visitorSet.label = attributed.label;
+    visitorSet.knownVia = cv ? "cv" : "link";
   }
 
   await Visitor.findOneAndUpdate(
@@ -185,46 +191,41 @@ async function handleStart(req, body) {
         firstLandingUrl: str(context.landingUrl, 800)
       },
       $set: visitorSet,
-      ...(cv ? { $addToSet: { cvSlugs: cv.slug } } : {}),
+      ...(attributed ? { $addToSet: { cvSlugs: attributed.slug } } : {}),
       $inc: { sessionCount: 1 }
     },
     { upsert: true }
   );
 
-  // record the employer's site visit against the CV and its job application
-  if (cv) {
+  // record the visit against the CV / custom Link, and its job application if any
+  if (attributed) {
     try {
-      await Cv.updateOne(
-        { _id: cv._id },
-        {
-          $push: {
-            visits: {
-              $each: [
-                {
-                  at: now,
-                  sessionId,
-                  visitorId,
-                  city: geo?.city,
-                  country: geo?.country,
-                  device: device.deviceType
-                }
-              ],
-              $slice: -300
-            }
-          },
-          $inc: { visitCount: 1 }
-        }
-      );
-      await recordCvActivity(cv.jobApplication, {
-        type: "site_visit",
+      const visitEntry = {
         at: now,
         sessionId,
         visitorId,
         city: geo?.city,
         country: geo?.country,
-        device: device.deviceType,
-        isBot: device.isBot
-      });
+        device: device.deviceType
+      };
+      const Model = cv ? Cv : Link;
+      const id = cv ? cv._id : link._id;
+      await Model.updateOne(
+        { _id: id },
+        { $push: { visits: { $each: [visitEntry], $slice: -300 } }, $inc: { visitCount: 1 } }
+      );
+      if (attributed.jobApplication) {
+        await recordCvActivity(attributed.jobApplication, {
+          type: "site_visit",
+          at: now,
+          sessionId,
+          visitorId,
+          city: geo?.city,
+          country: geo?.country,
+          device: device.deviceType,
+          isBot: device.isBot
+        });
+      }
     } catch {
       /* attribution must never break session creation */
     }

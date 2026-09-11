@@ -19,15 +19,14 @@ const limiter = rateLimit({
 });
 
 const SLUG_RE = /^[A-Za-z0-9_-]{6,16}$/;
-const REDIRECT_BASE = (process.env.API_PUBLIC_ORIGIN || "").replace(/\/$/, "");
+// Shown/shared domain for tracked links — goharawan.com, not api.goharawan.com.
+// The client's render.yaml redirect-proxies /r/* to this API service.
+const SITE = (process.env.CLIENT_ORIGIN || "https://goharawan.com").split(",")[0].trim().replace(/\/$/, "");
 
 /** Build the { key: trackedUrl } map the CV page renders links from. */
-function trackedLinks(slug, master, req) {
-  // redirects live on this same service under /r — use an absolute URL so the
-  // links also work when the page is printed to a PDF and opened elsewhere.
-  const base = REDIRECT_BASE || `${req.protocol}://${req.get("host")}`;
+function trackedLinks(slug, master) {
   const map = {};
-  for (const t of linkTargets(master)) map[t] = `${base}/r/${slug}/${t}`;
+  for (const t of linkTargets(master)) map[t] = `${SITE}/r/${slug}/${t}`;
   return map;
 }
 
@@ -54,7 +53,7 @@ router.get("/:slug", limiter, async (req, res) => {
       slug: cv.slug,
       data: cv.data,
       contacts: master.contacts || {},
-      links: trackedLinks(cv.slug, master, req)
+      links: trackedLinks(cv.slug, master)
     }
   });
 });

@@ -8,6 +8,7 @@ import { adminConfigured, verifyPassword, issueToken, requireAdmin } from "../li
 import jobsRouter from "./adminJobs.js";
 import mailRouter from "./adminMail.js";
 import cvRouter from "./adminCv.js";
+import linksRouter from "./adminLinks.js";
 
 const router = Router();
 
@@ -43,6 +44,8 @@ router.use("/jobs", jobsRouter);
 router.use("/mail", mailRouter);
 // CV / cover-letter generator
 router.use("/cv", cvRouter);
+// Hand-picked custom tracking links (goharawan.com/r/<name>/portfolio)
+router.use("/links", linksRouter);
 
 function rangeToStart(range) {
   const now = Date.now();

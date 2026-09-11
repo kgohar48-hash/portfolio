@@ -1,9 +1,11 @@
 /**
- * Shared logging for CV opens and tracked-link clicks. Best-effort: never throws,
- * geo lookup is fire-and-forget so a redirect/response is never blocked on it.
+ * Shared logging for CV opens and tracked-link clicks (both CV-generated links
+ * and hand-picked custom Links). Best-effort: never throws, geo lookup is
+ * fire-and-forget so a redirect/response is never blocked on it.
  */
 
 import Cv from "../models/Cv.js";
+import Link from "../models/Link.js";
 import { clientIp } from "./enrich.js";
 import { isbot } from "isbot";
 import { geolocate } from "./geo.js";
@@ -20,12 +22,12 @@ function isScanner(ua = "") {
   return isbot(ua) || SCANNER_RE.test(ua);
 }
 
-async function pushEvent(cvId, field, entry) {
-  await Cv.updateOne(
-    { _id: cvId },
+async function pushEvent(Model, id, field, entry, countField) {
+  await Model.updateOne(
+    { _id: id },
     {
       $push: { [field]: { $each: [entry], $slice: -EVENT_CAP } },
-      $inc: field === "opens" ? { openCount: 1 } : field === "linkEvents" ? { clickCount: 1 } : { visitCount: 1 }
+      $inc: { [countField]: 1 }
     }
   );
 }
@@ -37,7 +39,7 @@ export async function logCvOpen(cv, req) {
   const bot = isScanner(ua);
   const at = new Date();
 
-  await pushEvent(cv._id, "opens", { at, ip, uaRaw: ua.slice(0, 400), isBot: bot });
+  await pushEvent(Cv, cv._id, "opens", { at, ip, uaRaw: ua.slice(0, 400), isBot: bot }, "openCount");
 
   // enrich with geo out of band, then also drop an entry on the linked job
   geolocate(ip)
@@ -53,14 +55,14 @@ export async function logCvOpen(cv, req) {
     .catch(() => {});
 }
 
-/** Record a tracked-link click. `target` is portfolio|linkedin|github|<projectKey>. */
+/** Record a click on a CV's tracked link. `target` is portfolio|linkedin|github|<projectKey>. */
 export async function logCvLinkClick(cv, target, req) {
   const ip = clientIp(req);
   const ua = String(req.get("user-agent") || "");
   const bot = isScanner(ua);
   const at = new Date();
 
-  await pushEvent(cv._id, "linkEvents", { at, target, ip, uaRaw: ua.slice(0, 400), isBot: bot });
+  await pushEvent(Cv, cv._id, "linkEvents", { at, target, ip, uaRaw: ua.slice(0, 400), isBot: bot }, "clickCount");
 
   geolocate(ip)
     .then((geo) =>
@@ -74,6 +76,31 @@ export async function logCvLinkClick(cv, target, req) {
       })
     )
     .catch(() => {});
+}
+
+/** Record a click on a hand-picked custom Link (see models/Link.js). */
+export async function logLinkClick(link, target, req) {
+  const ip = clientIp(req);
+  const ua = String(req.get("user-agent") || "");
+  const bot = isScanner(ua);
+  const at = new Date();
+
+  await pushEvent(Link, link._id, "linkEvents", { at, target, ip, uaRaw: ua.slice(0, 400), isBot: bot }, "clickCount");
+
+  if (link.jobApplication) {
+    geolocate(ip)
+      .then((geo) =>
+        recordCvActivity(link.jobApplication, {
+          type: "link_click",
+          target,
+          at,
+          city: geo?.city,
+          country: geo?.country,
+          isBot: bot
+        })
+      )
+      .catch(() => {});
+  }
 }
 
 export { isScanner };

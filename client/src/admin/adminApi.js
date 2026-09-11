@@ -65,6 +65,14 @@ export const adminApi = {
     remove: (id) => req(`/jobs/${encodeURIComponent(id)}`, { method: "DELETE" })
   },
 
+  links: {
+    list: () => req("/links"),
+    get: (id) => req(`/links/${encodeURIComponent(id)}`),
+    create: (body) => req("/links", { method: "POST", body }),
+    patch: (id, body) => req(`/links/${encodeURIComponent(id)}`, { method: "PATCH", body }),
+    remove: (id) => req(`/links/${encodeURIComponent(id)}`, { method: "DELETE" })
+  },
+
   cv: {
     master: () => req("/cv/master"),
     saveMaster: (master) => req("/cv/master", { method: "PUT", body: { master } }),
