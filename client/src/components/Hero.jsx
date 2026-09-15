@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import portrait from "../assets/gohar.jpeg";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.02 } } };
 const item = {
@@ -34,6 +35,7 @@ function iconFor(label) {
 }
 
 export default function Hero({ person, contact }) {
+  const { t } = useLanguage();
   const links = contact?.links || [];
   const [first, last] = person.name.split(" ").length > 1
     ? [person.name.split(" ").slice(0, -1).join(" "), person.name.split(" ").slice(-1)[0]]
@@ -68,7 +70,7 @@ export default function Hero({ person, contact }) {
 
           <motion.div variants={item} className="hero-actions">
             <a href="#projects" className="btn btn-primary" data-track="hero:view-projects">
-              See projects →
+              {t.hero.cta}
             </a>
             {links.map((l) => (
               <a

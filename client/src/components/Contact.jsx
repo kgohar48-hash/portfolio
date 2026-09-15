@@ -3,10 +3,12 @@ import Section from "./Section";
 import { Reveal, SpotlightCard } from "./primitives";
 import { sendContact } from "../api";
 import { trackEvent } from "../lib/analytics";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const initial = { name: "", email: "", subject: "", message: "", company: "" };
 
 export default function Contact({ contact }) {
+  const { lang, t } = useLanguage();
   const [form, setForm] = useState(initial);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | ok | bad
@@ -30,27 +32,22 @@ export default function Contact({ contact }) {
     setErrors({});
     setNote("");
     trackEvent("contact_submit");
-    const { ok, body } = await sendContact(form);
+    const { ok, body } = await sendContact({ ...form, lang });
     if (ok) {
       setStatus("ok");
-      setNote(body.message || "Thanks — your message is in.");
+      setNote(body.message || t.contact.successFallback);
       setForm(initial);
       trackEvent("contact_success");
     } else {
       setStatus("bad");
       setErrors(body.errors || {});
-      setNote(body.error || "Please check the form and try again.");
+      setNote(body.error || t.contact.errorFallback);
       trackEvent("contact_error", { meta: { fields: Object.keys(body.errors || {}) } });
     }
   }
 
   return (
-    <Section
-      id="contact"
-      eyebrow="Contact"
-      title="Let's build something serious."
-      sub="If you care about performance, clean architecture, and shipping products with real outcomes — reach out."
-    >
+    <Section id="contact" eyebrow={t.contact.eyebrow} title={t.contact.title} sub={t.contact.sub}>
       <div className="contact-grid">
         <Reveal delay={0.05}>
           <div className="contact-links">
@@ -80,30 +77,30 @@ export default function Contact({ contact }) {
               />
 
               <div className="field">
-                <label htmlFor="name">Name</label>
-                <input id="name" value={form.name} onFocus={() => onFieldFocus("name")} onChange={(e) => update("name", e.target.value)} placeholder="Your name" />
+                <label htmlFor="name">{t.contact.name}</label>
+                <input id="name" value={form.name} onFocus={() => onFieldFocus("name")} onChange={(e) => update("name", e.target.value)} placeholder={t.contact.namePlaceholder} />
                 {errors.name && <span className="err">{errors.name}</span>}
               </div>
 
               <div className="field">
-                <label htmlFor="email">Email</label>
-                <input id="email" type="email" value={form.email} onFocus={() => onFieldFocus("email")} onChange={(e) => update("email", e.target.value)} placeholder="you@company.com" />
+                <label htmlFor="email">{t.contact.email}</label>
+                <input id="email" type="email" value={form.email} onFocus={() => onFieldFocus("email")} onChange={(e) => update("email", e.target.value)} placeholder={t.contact.emailPlaceholder} />
                 {errors.email && <span className="err">{errors.email}</span>}
               </div>
 
               <div className="field">
-                <label htmlFor="subject">Subject (optional)</label>
-                <input id="subject" value={form.subject} onFocus={() => onFieldFocus("subject")} onChange={(e) => update("subject", e.target.value)} placeholder="Role, project, or just say hi" />
+                <label htmlFor="subject">{t.contact.subject}</label>
+                <input id="subject" value={form.subject} onFocus={() => onFieldFocus("subject")} onChange={(e) => update("subject", e.target.value)} placeholder={t.contact.subjectPlaceholder} />
               </div>
 
               <div className="field">
-                <label htmlFor="message">Message</label>
-                <textarea id="message" value={form.message} onFocus={() => onFieldFocus("message")} onChange={(e) => update("message", e.target.value)} placeholder="What are you building?" />
+                <label htmlFor="message">{t.contact.message}</label>
+                <textarea id="message" value={form.message} onFocus={() => onFieldFocus("message")} onChange={(e) => update("message", e.target.value)} placeholder={t.contact.messagePlaceholder} />
                 {errors.message && <span className="err">{errors.message}</span>}
               </div>
 
               <button type="submit" className="btn btn-primary" data-track="contact:send" disabled={status === "sending"}>
-                {status === "sending" ? "Sending…" : "Send message"}
+                {status === "sending" ? t.contact.sending : t.contact.send}
               </button>
 
               {note && <div className={`form-note ${status === "ok" ? "ok" : "bad"}`}>{note}</div>}

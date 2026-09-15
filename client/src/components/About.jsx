@@ -1,9 +1,11 @@
 import Section from "./Section";
 import { Reveal } from "./primitives";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function About({ person }) {
+  const { t } = useLanguage();
   return (
-    <Section id="about" eyebrow="About" title="Builder mindset, systems discipline" sub="Not a resume dump — a snapshot of how I think, build, and ship.">
+    <Section id="about" eyebrow={t.about.eyebrow} title={t.about.title} sub={t.about.sub}>
       <div className="about-grid">
         <Reveal className="about-body" delay={0.1}>
           {person.summary.map((p, i) => (
@@ -12,16 +14,16 @@ export default function About({ person }) {
         </Reveal>
         <Reveal className="about-side" delay={0.18}>
           <div className="about-fact">
-            <div className="k">Based in</div>
+            <div className="k">{t.about.basedIn}</div>
             <div className="v">{person.location}</div>
           </div>
           <div className="about-fact">
-            <div className="k">Currently</div>
-            <div className="v">M.Sc. Data Science & AI, Hochschule Furtwangen</div>
+            <div className="k">{t.about.currently}</div>
+            <div className="v">{t.about.currentlyValue}</div>
           </div>
           <div className="about-fact">
-            <div className="k">Focus</div>
-            <div className="v">Backend systems · data pipelines · LLM products</div>
+            <div className="k">{t.about.focus}</div>
+            <div className="v">{t.about.focusValue}</div>
           </div>
         </Reveal>
       </div>

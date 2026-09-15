@@ -1,15 +1,12 @@
 import Section from "./Section";
 import { Reveal, SpotlightCard } from "./primitives";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function Projects({ projects }) {
+  const { t } = useLanguage();
   return (
-    <Section
-      id="projects"
-      eyebrow="Featured projects"
-      title="Shipping products with measurable impact"
-      sub="Premium engineering is clarity under pressure: correctness, throughput, cost, and maintainability."
-    >
-      <p className="projects-hint">Hover a project for colour.</p>
+    <Section id="projects" eyebrow={t.projects.eyebrow} title={t.projects.title} sub={t.projects.sub}>
+      <p className="projects-hint">{t.projects.hint}</p>
       <div className="projects-list">
         {projects.map((p, i) => (
           <Reveal key={p.name} delay={i * 0.05}>
@@ -26,7 +23,7 @@ export default function Projects({ projects }) {
                     className="project-link"
                     data-track={`project:${p.name}`}
                   >
-                    Visit site ↗
+                    {t.projects.visitSite}
                   </a>
                 )}
                 {p.stack?.length > 0 && (

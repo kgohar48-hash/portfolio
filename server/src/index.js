@@ -11,6 +11,7 @@ import rateLimit from "express-rate-limit";
 import { connectDb, isDbConnected } from "./config/db.js";
 import portfolioRoutes from "./routes/portfolio.js";
 import contactRoutes from "./routes/contact.js";
+import localeRoutes from "./routes/locale.js";
 import trackRoutes from "./routes/track.js";
 import adminRoutes from "./routes/admin.js";
 import cvRoutes from "./routes/cv.js";
@@ -65,6 +66,7 @@ app.get("/api/health", (_req, res) => {
 
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/locale", localeRoutes);
 app.use("/api/track", trackRoutes);
 app.use("/api/cv", cvRoutes);
 app.use("/api/admin", adminRoutes);

@@ -2,8 +2,8 @@
 // Override with VITE_API_BASE if the API lives elsewhere.
 const BASE = import.meta.env.VITE_API_BASE || "";
 
-export async function getPortfolio() {
-  const res = await fetch(`${BASE}/api/portfolio`, { headers: { Accept: "application/json" } });
+export async function getPortfolio(lang = "en") {
+  const res = await fetch(`${BASE}/api/portfolio?lang=${encodeURIComponent(lang)}`, { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`Portfolio request failed (${res.status})`);
   const body = await res.json();
   return body.data;

@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function ConsentBanner({ onAccept, onDecline }) {
+  const { t } = useLanguage();
   return (
     <motion.div
       className="consent"
       role="dialog"
-      aria-label="Analytics consent"
+      aria-label={t.consent.ariaLabel}
       aria-live="polite"
       initial={{ y: 120, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -13,17 +15,14 @@ export default function ConsentBanner({ onAccept, onDecline }) {
     >
       <div className="consent-inner">
         <p className="consent-text">
-          This site uses privacy-friendly analytics to understand how visitors use it — approximate
-          location (from your IP), device, and on-page activity. Nothing runs until you agree, and
-          there are no ads or third-party trackers.{" "}
-          <a href="/privacy">What's collected&nbsp;→</a>
+          {t.consent.text} <a href="/privacy">{t.consent.link}</a>
         </p>
         <div className="consent-actions">
           <button type="button" className="btn btn-ghost consent-btn" onClick={onDecline}>
-            Decline
+            {t.consent.decline}
           </button>
           <button type="button" className="btn btn-primary consent-btn" onClick={onAccept}>
-            Accept
+            {t.consent.accept}
           </button>
         </div>
       </div>

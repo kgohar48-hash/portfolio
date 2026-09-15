@@ -408,6 +408,33 @@ img {
   color: var(--accent-ink);
 }
 
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  margin-left: 6px;
+  gap: 2px;
+}
+.lang-toggle button {
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--fg-faint);
+  transition: background 0.2s, color 0.2s;
+}
+.lang-toggle button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
 /* ============================================================
    HERO
    ============================================================ */

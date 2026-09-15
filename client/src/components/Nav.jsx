@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
-
-const LINKS = [
-  { id: "about", label: "About" },
-  { id: "projects", label: "Projects" },
-  { id: "experience", label: "Experience" },
-  { id: "bookshelf", label: "Bookshelf" }
-];
+import LanguageToggle from "./LanguageToggle";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function Nav() {
+  const { t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("");
+
+  const LINKS = [
+    { id: "about", label: t.nav.about },
+    { id: "projects", label: t.nav.projects },
+    { id: "experience", label: t.nav.experience },
+    { id: "bookshelf", label: t.nav.bookshelf }
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -20,7 +23,7 @@ export default function Nav() {
   }, []);
 
   useEffect(() => {
-    const sections = LINKS.map((l) => document.getElementById(l.id)).filter(Boolean);
+    const sections = ["about", "projects", "experience", "bookshelf"].map((id) => document.getElementById(id)).filter(Boolean);
     if (!sections.length) return;
     const io = new IntersectionObserver(
       (entries) => {
@@ -48,8 +51,9 @@ export default function Nav() {
             </a>
           ))}
           <a href="#contact" className={active === "contact" ? "active" : ""}>
-            Contact
+            {t.nav.contact}
           </a>
+          <LanguageToggle />
           <ThemeToggle />
         </nav>
       </div>

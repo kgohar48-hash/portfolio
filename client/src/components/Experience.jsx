@@ -1,9 +1,11 @@
 import Section from "./Section";
 import { Reveal, SpotlightCard } from "./primitives";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function Experience({ experience }) {
+  const { t } = useLanguage();
   return (
-    <Section id="experience" eyebrow="Experience" title="Leadership, scale, and outcome-driven execution">
+    <Section id="experience" eyebrow={t.experience.eyebrow} title={t.experience.title}>
       <div className="timeline">
         {experience.map((e, i) => (
           <Reveal key={e.company} delay={i * 0.05}>

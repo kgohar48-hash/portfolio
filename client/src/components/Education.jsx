@@ -1,9 +1,11 @@
 import Section from "./Section";
 import { Reveal, SpotlightCard } from "./primitives";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function Education({ education }) {
+  const { t } = useLanguage();
   return (
-    <Section id="education" eyebrow="Education" title="A strong technical base with applied AI and systems work">
+    <Section id="education" eyebrow={t.education.eyebrow} title={t.education.title}>
       <div className="timeline">
         {education.map((e, i) => (
           <Reveal key={e.degree} delay={i * 0.05}>

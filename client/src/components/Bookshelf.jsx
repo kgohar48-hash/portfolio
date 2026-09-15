@@ -1,5 +1,6 @@
 import Section from "./Section";
 import { Reveal } from "./primitives";
+import { useLanguage } from "../i18n/LanguageContext";
 
 import deliverance from "../assets/books/deliverance-from-error.jpg";
 import whiteNights from "../assets/books/white-nights.jpg";
@@ -16,10 +17,11 @@ const COVERS = {
 };
 
 export default function Bookshelf({ bookshelf }) {
+  const { t } = useLanguage();
   if (!bookshelf?.length) return null;
 
   return (
-    <Section id="bookshelf" eyebrow="My bookshelf" title="The company I keep">
+    <Section id="bookshelf" eyebrow={t.bookshelf.eyebrow} title={t.bookshelf.title}>
       <div className="books">
         {bookshelf.map((b, i) => (
           <Reveal key={b.title} delay={i * 0.04}>
