@@ -72,6 +72,22 @@ export default function Hero({ person, contact }) {
             <a href="#projects" className="btn btn-primary" data-track="hero:view-projects">
               {t.hero.cta}
             </a>
+            <a
+              href="/resumes/Gohar_Khan_Awan_Resume_EN.pdf"
+              className="btn btn-ghost"
+              download="Gohar_Khan_Awan_Resume_EN.pdf"
+              data-track="hero:download-resume-en"
+            >
+              {t.hero.resumeEn}
+            </a>
+            <a
+              href="/resumes/Gohar_Khan_Awan_Lebenslauf_DE.pdf"
+              className="btn btn-ghost"
+              download="Gohar_Khan_Awan_Lebenslauf_DE.pdf"
+              data-track="hero:download-resume-de"
+            >
+              {t.hero.resumeDe}
+            </a>
             {links.map((l) => (
               <a
                 key={l.label}

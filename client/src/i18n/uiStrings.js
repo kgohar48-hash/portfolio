@@ -5,7 +5,7 @@ export const uiStrings = {
   en: {
     loading: "loading portfolio…",
     nav: { about: "About", projects: "Projects", experience: "Experience", bookshelf: "Bookshelf", contact: "Contact" },
-    hero: { cta: "See projects →" },
+    hero: { cta: "See projects →", resumeEn: "Resume EN ↓", resumeDe: "Lebenslauf DE ↓" },
     about: {
       eyebrow: "About",
       title: "Builder mindset, systems discipline",
@@ -80,7 +80,7 @@ export const uiStrings = {
   de: {
     loading: "Portfolio wird geladen…",
     nav: { about: "Über mich", projects: "Projekte", experience: "Erfahrung", bookshelf: "Bücherregal", contact: "Kontakt" },
-    hero: { cta: "Projekte ansehen →" },
+    hero: { cta: "Projekte ansehen →", resumeEn: "Resume EN ↓", resumeDe: "Lebenslauf DE ↓" },
     about: {
       eyebrow: "Über mich",
       title: "Macher-Mentalität, Systemdenken",
