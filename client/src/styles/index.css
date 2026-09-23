@@ -734,6 +734,14 @@ img {
   color: var(--fg);
   font-size: 1.05rem;
 }
+.project-demo-video {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
 .project-details {
   margin-top: 4px;
   display: grid;

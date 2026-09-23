@@ -31,6 +31,7 @@ export const fallbackPortfolio = {
       status: "Privacy-first product",
       accent: "violet",
       url: "https://mychatwrap.com",
+      demoVideo: "/demo/mychatwrap-homepage-demo.mp4",
       blurb:
         "A privacy-first WhatsApp chat analyzer that turns any exported chat into a “Wrapped”-style dashboard — with a set of original analytics I designed and built from scratch.",
       details: [

@@ -31,6 +31,7 @@ export const fallbackPortfolioDe = {
       status: "Datenschutzorientiertes Produkt",
       accent: "violet",
       url: "https://mychatwrap.com",
+      demoVideo: "/demo/mychatwrap-homepage-demo.mp4",
       blurb:
         "Ein datenschutzorientierter WhatsApp-Chat-Analyzer, der jeden exportierten Chat in ein „Wrapped“-artiges Dashboard verwandelt — mit einer Reihe eigens entwickelter Analysen, die ich von Grund auf konzipiert und gebaut habe.",
       details: [

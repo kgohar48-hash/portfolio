@@ -39,6 +39,16 @@ export default function Projects({ projects }) {
 
               <div>
                 <p className="project-blurb">{p.blurb}</p>
+                {p.demoVideo && (
+                  <video
+                    className="project-demo-video"
+                    src={p.demoVideo}
+                    controls
+                    muted
+                    playsInline
+                    preload="metadata"
+                  />
+                )}
                 <ul className="project-details">
                   {p.details.map((d, idx) => (
                     <li key={idx}>{d}</li>
