@@ -48,6 +48,7 @@ export const fallbackPortfolio = {
       status: "Current project",
       accent: "indigo",
       url: "https://analyzebankstatement.com",
+      demoVideo: "/demo/analyzebankstatement-tutorial.mp4",
       blurb: "AI-powered financial data analysis platform that extracts clean, structured insights from messy bank statements.",
       details: [
         "LLM-based extraction pipeline that turns PDF and CSV statements into normalized, queryable transactions.",

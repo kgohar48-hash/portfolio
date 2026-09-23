@@ -67,6 +67,7 @@ export const portfolio = {
       status: "Current project",
       accent: "indigo",
       url: "https://analyzebankstatement.com",
+      demoVideo: "/demo/analyzebankstatement-tutorial.mp4",
       blurb:
         "AI-powered financial data analysis platform that extracts clean, structured insights from messy bank statements.",
       details: [

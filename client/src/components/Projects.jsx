@@ -44,9 +44,11 @@ export default function Projects({ projects }) {
                     className="project-demo-video"
                     src={p.demoVideo}
                     controls
+                    autoPlay
+                    loop
                     muted
                     playsInline
-                    preload="metadata"
+                    preload="auto"
                   />
                 )}
                 <ul className="project-details">

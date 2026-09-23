@@ -48,6 +48,7 @@ export const fallbackPortfolioDe = {
       status: "Aktuelles Projekt",
       accent: "indigo",
       url: "https://analyzebankstatement.com",
+      demoVideo: "/demo/analyzebankstatement-tutorial.mp4",
       blurb: "KI-gestützte Plattform zur Finanzdatenanalyse, die aus unübersichtlichen Kontoauszügen saubere, strukturierte Erkenntnisse extrahiert.",
       details: [
         "LLM-basierte Extraktionspipeline, die PDF- und CSV-Auszüge in normalisierte, abfragbare Transaktionen umwandelt.",
